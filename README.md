@@ -220,6 +220,9 @@ Design decisions, research findings (with what was checked and how) and deviatio
   - **View model**: one test per recommendation rule (and more), estimates, units/size, remembered choices.
   - Units/axes, cleanup, allocation, intermediate file format, PNG writer, decoders, texture resolver, palette,
     baking, settings, naming, file filters, summary text, and that every XAML binding exists on its view model.
+- The `net8.0` worker runs on both runtimes Revit brings: the worker tests pass with it rolled forward to .NET 10
+  (as for Revit 2027; CI's default) and pinned to .NET 8 (as for Revit 2025/2026; a separate CI step). The worker
+  reports the runtime it runs on.
 - `Install.ps1` / `Uninstall.ps1` were run with PowerShell 7 against a temporary folder (install, reinstall,
   wrong-year refusal, uninstall).
 

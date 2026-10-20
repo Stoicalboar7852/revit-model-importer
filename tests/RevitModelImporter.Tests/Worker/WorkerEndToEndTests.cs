@@ -68,6 +68,15 @@ public sealed class WorkerEndToEndTests : IDisposable
         }
 
         Assert.StartsWith("6.", formats.AssimpVersion, StringComparison.Ordinal);
+
+        // The worker targets net8.0; it must run on .NET 8 (Revit 2025/2026) and .NET 10 (Revit 2027).
+        var runtime = Version.Parse(formats.RuntimeVersion);
+        _output.WriteLine($"Worker runtime: .NET {runtime}, Assimp {formats.AssimpVersion}");
+        Assert.True(runtime.Major >= 8);
+        if (Environment.GetEnvironmentVariable(WorkerHarness.ExpectedRuntimeMajorVariable) is { Length: > 0 } expected)
+        {
+            Assert.Equal(int.Parse(expected, System.Globalization.CultureInfo.InvariantCulture), runtime.Major);
+        }
         var filter = FileFilterBuilder.Build(formats);
         Assert.Equal("All supported files", filter[0].Label);
         Assert.Contains("*.glb", filter[0].Patterns, StringComparison.Ordinal);

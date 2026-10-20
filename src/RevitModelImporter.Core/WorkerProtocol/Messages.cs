@@ -66,6 +66,9 @@ public sealed class FormatsResult
 {
     public string AssimpVersion { get; set; } = "";
 
+    /// <summary>.NET runtime the worker is running on (diagnostics: it targets net8.0 and rolls forward).</summary>
+    public string RuntimeVersion { get; set; } = "";
+
     /// <summary>Importable formats (Revit-native and animation-only formats removed).</summary>
     public List<FormatInfo> Formats { get; set; } = [];
 }

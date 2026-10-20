@@ -113,6 +113,7 @@ public static class Program
             Formats = new FormatsResult
             {
                 AssimpVersion = AssimpSceneLoader.AssimpVersion,
+                RuntimeVersion = Environment.Version.ToString(),
                 Formats = formats.Select(f => new FormatInfo { Extension = f.Extension, Description = f.Description }).ToList(),
             },
         });

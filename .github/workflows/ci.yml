@@ -88,6 +88,12 @@ jobs:
       - name: Test
         run: dotnet test RevitModelImporter.sln -c Release --no-build --logger "trx;LogFileName=linux.trx" --logger "console;verbosity=normal" --results-directory TestResults
 
+      - name: Worker end-to-end tests with the worker pinned to .NET 8 (the runtime Revit 2025/2026 install)
+        env:
+          RMI_WORKER_ROLL_FORWARD: LatestPatch
+          RMI_EXPECT_WORKER_RUNTIME_MAJOR: "8"
+        run: dotnet test RevitModelImporter.sln -c Release --no-build --filter "FullyQualifiedName~RevitModelImporter.Tests.Worker" --logger "trx;LogFileName=linux-worker-net8.trx" --results-directory TestResults
+
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
