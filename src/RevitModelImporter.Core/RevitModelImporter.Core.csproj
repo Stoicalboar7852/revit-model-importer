@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Format-neutral scene model, processing, simplification, intermediate file format,
+       worker protocol, settings and view models. No Revit, no native code, no NuGet dependencies. -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>RevitModelImporter.Core</RootNamespace>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="RevitModelImporter.Tests" />
+  </ItemGroup>
+</Project>

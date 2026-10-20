@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Out-of-process converter: everything native or third-party lives here, never inside Revit. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>RevitModelImporter.Worker</RootNamespace>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- Framework-dependent; runs on .NET 8 (Revit 2025/2026) and .NET 10 (Revit 2027). See docs/DESIGN.md. -->
+    <RollForward>LatestMajor</RollForward>
+    <SelfContained>false</SelfContained>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <ServerGarbageCollector>false</ServerGarbageCollector>
+    <ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>
+    <TieredPGO>true</TieredPGO>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="AssimpNetter" />
+    <PackageReference Include="StbImageSharp" />
+    <PackageReference Include="Pfim" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\RevitModelImporter.Core\RevitModelImporter.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="RevitModelImporter.Tests" />
+  </ItemGroup>
+</Project>
