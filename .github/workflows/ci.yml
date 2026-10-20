@@ -1,0 +1,96 @@
+name: CI
+
+on:
+  push:
+    branches: [main, 'claude/**']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  windows:
+    name: Build, test and package (Windows)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - name: Restore
+        run: dotnet restore RevitModelImporter.sln
+
+      - name: Build every target (Core, Worker, Tests, add-in for Revit 2026 and 2027)
+        run: dotnet build RevitModelImporter.sln -c Release --no-restore -warnaserror
+
+      - name: Build add-in for Revit 2025
+        run: dotnet build src/RevitModelImporter.Revit/RevitModelImporter.Revit.csproj -c Release -f net8.0-windows -p:RevitVersion=2025 -warnaserror
+
+      - name: Test
+        run: dotnet test RevitModelImporter.sln -c Release --no-build --logger "trx;LogFileName=windows.trx" --logger "console;verbosity=normal" --results-directory TestResults
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-windows
+          path: TestResults
+
+      - name: Package
+        shell: pwsh
+        run: ./packaging/Build-Package.ps1 -Configuration Release
+
+      - name: Upload Revit 2025 package
+        uses: actions/upload-artifact@v4
+        with:
+          name: RevitModelImporter-Revit2025
+          path: dist/RevitModelImporter-*-Revit2025.zip
+          if-no-files-found: error
+
+      - name: Upload Revit 2026 package
+        uses: actions/upload-artifact@v4
+        with:
+          name: RevitModelImporter-Revit2026
+          path: dist/RevitModelImporter-*-Revit2026.zip
+          if-no-files-found: error
+
+      - name: Upload Revit 2027 package
+        uses: actions/upload-artifact@v4
+        with:
+          name: RevitModelImporter-Revit2027
+          path: dist/RevitModelImporter-*-Revit2027.zip
+          if-no-files-found: error
+
+  linux:
+    name: Build and test (Linux)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - name: Build (the WPF add-in builds on Linux via EnableWindowsTargeting)
+        run: dotnet build RevitModelImporter.sln -c Release -warnaserror
+
+      - name: Test
+        run: dotnet test RevitModelImporter.sln -c Release --no-build --logger "trx;LogFileName=linux.trx" --logger "console;verbosity=normal" --results-directory TestResults
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-linux
+          path: TestResults

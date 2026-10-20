@@ -22,23 +22,29 @@
     <NoWarn>$(NoWarn);CA1416;CA1001;CA1063;CA1816;CA2201;CA1305;CA1515;CA1711;CA1849;CA2008</NoWarn>
   </PropertyGroup>
 
-  <!-- Map target framework → Revit year. -->
+  <!-- Map target framework → Revit year. RevitYear is internal: a global -p:RevitVersion cannot be overridden per
+       target framework, so it only selects between the two net8.0-windows years. -->
   <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0-windows'">
-    <RevitVersion>2027</RevitVersion>
+    <RevitYear>2027</RevitYear>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0-windows' And '$(RevitVersion)' != '2025'">
-    <RevitVersion>2026</RevitVersion>
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0-windows'">
+    <RevitYear Condition="'$(RevitVersion)' == '2025'">2025</RevitYear>
+    <RevitYear Condition="'$(RevitVersion)' != '2025'">2026</RevitYear>
   </PropertyGroup>
   <PropertyGroup>
-    <RevitApiPackageVersion Condition="'$(RevitVersion)' == '2025'">2025.0.2</RevitApiPackageVersion>
-    <RevitApiPackageVersion Condition="'$(RevitVersion)' == '2026'">2026.0.4</RevitApiPackageVersion>
-    <RevitApiPackageVersion Condition="'$(RevitVersion)' == '2027'">2027.0.20</RevitApiPackageVersion>
-    <DefineConstants>$(DefineConstants);REVIT$(RevitVersion)</DefineConstants>
-    <DefineConstants Condition="'$(RevitVersion)' != '2025'">$(DefineConstants);REVIT2026_OR_GREATER</DefineConstants>
+    <RevitApiPackageVersion Condition="'$(RevitYear)' == '2025'">2025.0.2</RevitApiPackageVersion>
+    <RevitApiPackageVersion Condition="'$(RevitYear)' == '2026'">2026.0.4</RevitApiPackageVersion>
+    <RevitApiPackageVersion Condition="'$(RevitYear)' == '2027'">2027.0.20</RevitApiPackageVersion>
+    <DefineConstants>$(DefineConstants);REVIT$(RevitYear)</DefineConstants>
+    <DefineConstants Condition="'$(RevitYear)' != '2025'">$(DefineConstants);REVIT2026_OR_GREATER</DefineConstants>
     <!-- Keep each Revit year's output separate (obj\R2025 is set in Directory.Build.props). -->
-    <OutputPath>bin\$(Configuration)\R$(RevitVersion)\</OutputPath>
+    <OutputPath>bin\$(Configuration)\R$(RevitYear)\</OutputPath>
     <DefaultItemExcludes>$(DefaultItemExcludes);obj\**;bin\**</DefaultItemExcludes>
   </PropertyGroup>
+
+  <Target Name="CheckRevitVersion" BeforeTargets="CoreCompile" Condition="'$(TargetFramework)' != '' And '$(RevitVersion)' != '' And '$(RevitVersion)' != '$(RevitYear)'">
+    <Error Text="RevitVersion=$(RevitVersion) cannot be built as $(TargetFramework): Revit 2025 and 2026 use net8.0-windows, Revit 2027 uses net10.0-windows. Add -f to pick the matching target framework." />
+  </Target>
 
   <ItemGroup>
     <!-- Compile-only reference assemblies; never copied, never committed. -->
@@ -55,6 +61,6 @@
   </ItemGroup>
 
   <Target Name="ShowRevitVersion" BeforeTargets="CoreCompile">
-    <Message Importance="high" Text="$(MSBuildProjectName) $(TargetFramework) → Revit $(RevitVersion) (API package $(RevitApiPackageVersion))" />
+    <Message Importance="high" Text="$(MSBuildProjectName) $(TargetFramework) → Revit $(RevitYear) (API package $(RevitApiPackageVersion))" />
   </Target>
 </Project>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Revit Model Importer for Revit 2026. Install into %AppData%\Autodesk\Revit\Addins\2026\ (see Install.ps1).
+     The AddInId never changes between releases or Revit versions. No <ManifestSettings> dependency isolation:
+     the add-in has no third-party dependencies inside Revit (see docs/DESIGN.md §1.7). -->
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>Revit Model Importer</Name>
+    <Assembly>RevitModelImporter\RevitModelImporter.Revit.dll</Assembly>
+    <AddInId>d31302fc-ca11-4cf4-88e6-2d1526ad2673</AddInId>
+    <FullClassName>RevitModelImporter.Revit.App</FullClassName>
+    <VendorId>RevitModelImporter</VendorId>
+    <VendorDescription>Revit Model Importer (open source, MIT)</VendorDescription>
+  </AddIn>
+</RevitAddIns>
