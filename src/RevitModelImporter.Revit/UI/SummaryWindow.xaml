@@ -1,0 +1,48 @@
+<Window x:Class="RevitModelImporter.Revit.UI.SummaryWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Import summary"
+        Width="680" SizeToContent="Height" ResizeMode="CanResizeWithGrip"
+        FontFamily="Segoe UI" FontSize="12" ShowInTaskbar="False" UseLayoutRounding="True">
+  <Window.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/RevitModelImporter.Revit;component/UI/Styles.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </Window.Resources>
+  <DockPanel Margin="14">
+    <DockPanel DockPanel.Dock="Bottom" Margin="0,10,0,0" LastChildFill="False">
+      <Button DockPanel.Dock="Right" Content="Close" IsDefault="True" IsCancel="True" Click="OnClose" />
+      <Button DockPanel.Dock="Right" Content="Copy to clipboard" Click="OnCopy" />
+    </DockPanel>
+    <StackPanel>
+      <TextBlock x:Name="Headline" FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,0,0,10" />
+      <ItemsControl x:Name="Lines">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <Grid Margin="0,1">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="230" />
+                <ColumnDefinition Width="*" />
+              </Grid.ColumnDefinitions>
+              <TextBlock Text="{Binding Item1}" Foreground="{StaticResource MutedText}" />
+              <TextBlock Grid.Column="1" Text="{Binding Item2}" TextWrapping="Wrap" />
+            </Grid>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+      <Border x:Name="TextureNote" Background="{StaticResource NoticeBackground}" BorderBrush="{StaticResource NoticeBorder}" BorderThickness="1" CornerRadius="3" Padding="8,6" Margin="0,10,0,0">
+        <TextBlock x:Name="TextureNoteText" TextWrapping="Wrap" />
+      </Border>
+      <TextBlock x:Name="WarningsHeader" Text="Warnings" FontWeight="SemiBold" Margin="0,10,0,4" />
+      <ListBox x:Name="WarningsList" MaxHeight="220" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+        <ListBox.ItemTemplate>
+          <DataTemplate>
+            <TextBlock Text="{Binding}" TextWrapping="Wrap" />
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+    </StackPanel>
+  </DockPanel>
+</Window>

@@ -1,0 +1,62 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:ui="clr-namespace:RevitModelImporter.Revit.UI">
+  <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+  <ui:InverseBooleanConverter x:Key="Not" />
+  <ui:NullOrEmptyToCollapsedConverter x:Key="NullToCollapsed" />
+
+  <SolidColorBrush x:Key="MutedText" Color="#555555" />
+  <SolidColorBrush x:Key="NoticeBackground" Color="#FFF4CE" />
+  <SolidColorBrush x:Key="NoticeBorder" Color="#C19C00" />
+  <SolidColorBrush x:Key="StrongNoticeBackground" Color="#FDE7E9" />
+  <SolidColorBrush x:Key="StrongNoticeBorder" Color="#A4262C" />
+  <SolidColorBrush x:Key="WarningBackground" Color="#FDF6E3" />
+
+  <Style TargetType="Window" x:Key="DialogWindow">
+    <Setter Property="FontFamily" Value="Segoe UI" />
+    <Setter Property="FontSize" Value="12" />
+    <Setter Property="ShowInTaskbar" Value="False" />
+    <Setter Property="UseLayoutRounding" Value="True" />
+    <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
+  </Style>
+
+  <Style TargetType="GroupBox">
+    <Setter Property="Padding" Value="8,6" />
+    <Setter Property="Margin" Value="0,0,0,8" />
+  </Style>
+
+  <Style TargetType="ComboBox">
+    <Setter Property="Margin" Value="0,2" />
+    <Setter Property="MinWidth" Value="200" />
+  </Style>
+
+  <Style TargetType="TextBox">
+    <Setter Property="Margin" Value="0,2" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+  </Style>
+
+  <Style TargetType="Button">
+    <Setter Property="MinWidth" Value="90" />
+    <Setter Property="Padding" Value="10,3" />
+    <Setter Property="Margin" Value="6,0,0,0" />
+  </Style>
+
+  <Style x:Key="Label" TargetType="TextBlock">
+    <Setter Property="Margin" Value="0,4,12,4" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="Foreground" Value="{StaticResource MutedText}" />
+  </Style>
+
+  <Style x:Key="Value" TargetType="TextBlock">
+    <Setter Property="Margin" Value="0,4" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="TextWrapping" Value="Wrap" />
+  </Style>
+
+  <Style x:Key="Note" TargetType="TextBlock">
+    <Setter Property="Margin" Value="0,0,0,4" />
+    <Setter Property="FontSize" Value="11" />
+    <Setter Property="TextWrapping" Value="Wrap" />
+    <Setter Property="Foreground" Value="{StaticResource MutedText}" />
+  </Style>
+</ResourceDictionary>

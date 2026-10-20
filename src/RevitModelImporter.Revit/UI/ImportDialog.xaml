@@ -1,0 +1,232 @@
+<Window x:Class="RevitModelImporter.Revit.UI.ImportDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Import 3D Model"
+        Width="900" SizeToContent="Height" MinWidth="760" ResizeMode="CanResizeWithGrip"
+        FontFamily="Segoe UI" FontSize="12" ShowInTaskbar="False" UseLayoutRounding="True">
+  <Window.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/RevitModelImporter.Revit;component/UI/Styles.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </Window.Resources>
+
+  <DockPanel Margin="14">
+    <!-- Buttons: Import is always enabled and never asks for confirmation. -->
+    <DockPanel DockPanel.Dock="Bottom" Margin="0,10,0,0" LastChildFill="False">
+      <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" Style="{StaticResource Note}" Text="{Binding EstimateText}" />
+      <Button DockPanel.Dock="Right" Content="Cancel" IsCancel="True" Command="{Binding CancelCommand}" />
+      <Button DockPanel.Dock="Right" Content="_Import" IsDefault="True" FontWeight="SemiBold" Command="{Binding ImportCommand}" />
+    </DockPanel>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" MaxHeight="{Binding Source={x:Static SystemParameters.WorkArea}, Path=Height}">
+      <StackPanel>
+        <!-- Header -->
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+          <TextBlock Text="{Binding FileName}" FontSize="16" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+          <TextBlock Text="{Binding FormatName}" Margin="10,0,0,0" VerticalAlignment="Bottom" Foreground="{StaticResource MutedText}" />
+        </StackPanel>
+
+        <!-- Inline simplification recommendation (never a pop-up, never blocking). -->
+        <Border Visibility="{Binding IsRecommendationVisible, Converter={StaticResource BoolToVisibility}}"
+                BorderThickness="1" CornerRadius="3" Padding="10,8" Margin="0,0,0,10">
+          <Border.Style>
+            <Style TargetType="Border">
+              <Setter Property="Background" Value="{StaticResource NoticeBackground}" />
+              <Setter Property="BorderBrush" Value="{StaticResource NoticeBorder}" />
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding IsStrongRecommendation}" Value="True">
+                  <Setter Property="Background" Value="{StaticResource StrongNoticeBackground}" />
+                  <Setter Property="BorderBrush" Value="{StaticResource StrongNoticeBorder}" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </Border.Style>
+          <DockPanel>
+            <Button DockPanel.Dock="Right" VerticalAlignment="Center" Margin="12,0,0,0"
+                    Content="Apply recommendation" Command="{Binding ApplyRecommendationCommand}"
+                    ToolTip="Turns on Simplify with the suggested target. You can still change or undo it." />
+            <StackPanel>
+              <TextBlock Text="{Binding RecommendationTitle}" FontWeight="SemiBold" Margin="0,0,0,3" />
+              <TextBlock Text="{Binding RecommendationText}" TextWrapping="Wrap" />
+            </StackPanel>
+          </DockPanel>
+        </Border>
+
+        <!-- Units sanity warning -->
+        <Border Visibility="{Binding IsShortEdgeWarningVisible, Converter={StaticResource BoolToVisibility}}"
+                Background="{StaticResource StrongNoticeBackground}" BorderBrush="{StaticResource StrongNoticeBorder}"
+                BorderThickness="1" CornerRadius="3" Padding="10,8" Margin="0,0,0,10">
+          <TextBlock Text="{Binding ShortEdgeWarningText}" TextWrapping="Wrap" />
+        </Border>
+
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="5*" />
+            <ColumnDefinition Width="12" />
+            <ColumnDefinition Width="6*" />
+          </Grid.ColumnDefinitions>
+
+          <!-- Statistics -->
+          <GroupBox Grid.Column="0" Header="Model">
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+              </Grid.ColumnDefinitions>
+              <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+              </Grid.RowDefinitions>
+
+              <TextBlock Grid.Row="0" Style="{StaticResource Label}" Text="Faces" />
+              <StackPanel Grid.Row="0" Grid.Column="1">
+                <TextBlock Style="{StaticResource Value}" FontWeight="SemiBold" Text="{Binding FaceCountText}" />
+                <TextBlock Style="{StaticResource Note}" Text="{Binding PolygonNote}" Visibility="{Binding PolygonNote, Converter={StaticResource NullToCollapsed}}" />
+              </StackPanel>
+
+              <TextBlock Grid.Row="1" Style="{StaticResource Label}" Text="Objects" />
+              <TextBlock Grid.Row="1" Grid.Column="1" Style="{StaticResource Value}" Text="{Binding ObjectsText}" />
+
+              <TextBlock Grid.Row="2" Style="{StaticResource Label}" Text="Vertices" />
+              <TextBlock Grid.Row="2" Grid.Column="1" Style="{StaticResource Value}" Text="{Binding VerticesText}" />
+
+              <TextBlock Grid.Row="3" Style="{StaticResource Label}" Text="Materials" />
+              <TextBlock Grid.Row="3" Grid.Column="1" Style="{StaticResource Value}" Text="{Binding MaterialsText}" />
+
+              <TextBlock Grid.Row="4" Style="{StaticResource Label}" Text="Textures" VerticalAlignment="Top" />
+              <StackPanel Grid.Row="4" Grid.Column="1">
+                <TextBlock Style="{StaticResource Value}" Text="{Binding TexturesText}" />
+                <ItemsControl ItemsSource="{Binding MissingTextures}" Visibility="{Binding HasMissingTextures, Converter={StaticResource BoolToVisibility}}" MaxHeight="80">
+                  <ItemsControl.Template>
+                    <ControlTemplate>
+                      <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <ItemsPresenter />
+                      </ScrollViewer>
+                    </ControlTemplate>
+                  </ItemsControl.Template>
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                      <TextBlock Text="{Binding StringFormat='missing: {0}'}" Foreground="#A4262C" FontSize="11" TextTrimming="CharacterEllipsis" ToolTip="{Binding}" />
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <Button HorizontalAlignment="Left" Margin="0,4,0,0" Content="Locate textures folder…"
+                        Command="{Binding LocateTexturesCommand}"
+                        Visibility="{Binding HasMissingTextures, Converter={StaticResource BoolToVisibility}}" />
+                <TextBlock Style="{StaticResource Note}" Text="{Binding StatusMessage}" Visibility="{Binding StatusMessage, Converter={StaticResource NullToCollapsed}}" />
+              </StackPanel>
+
+              <TextBlock Grid.Row="5" Style="{StaticResource Label}" Text="Size" VerticalAlignment="Top" />
+              <StackPanel Grid.Row="5" Grid.Column="1">
+                <TextBlock Style="{StaticResource Value}" FontWeight="SemiBold" Text="{Binding SizeText}" />
+                <TextBlock Style="{StaticResource Note}" Text="{Binding SizeImperialText}" />
+              </StackPanel>
+
+              <ItemsControl Grid.Row="6" Grid.ColumnSpan="2" ItemsSource="{Binding Warnings}" Margin="0,6,0,0"
+                            Visibility="{Binding HasWarnings, Converter={StaticResource BoolToVisibility}}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <TextBlock Text="{Binding}" TextWrapping="Wrap" FontSize="11" Foreground="#8A5A00" Margin="0,1" />
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </Grid>
+          </GroupBox>
+
+          <!-- Options -->
+          <GroupBox Grid.Column="2" Header="Options">
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+              </Grid.ColumnDefinitions>
+              <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+              </Grid.RowDefinitions>
+
+              <TextBlock Grid.Row="0" Style="{StaticResource Label}" Text="Source units" VerticalAlignment="Top" Margin="0,6,12,0" />
+              <StackPanel Grid.Row="0" Grid.Column="1">
+                <ComboBox ItemsSource="{Binding Units}" SelectedItem="{Binding SelectedUnit}" DisplayMemberPath="Label" />
+                <TextBlock Style="{StaticResource Note}" Text="{Binding UnitNote}" />
+              </StackPanel>
+
+              <TextBlock Grid.Row="1" Style="{StaticResource Label}" Text="Up axis" VerticalAlignment="Top" Margin="0,6,12,0" />
+              <StackPanel Grid.Row="1" Grid.Column="1">
+                <ComboBox ItemsSource="{Binding UpAxes}" SelectedItem="{Binding SelectedUpAxis}" DisplayMemberPath="Label" />
+                <TextBlock Style="{StaticResource Note}" Text="{Binding UpAxisNote}" />
+              </StackPanel>
+
+              <TextBlock Grid.Row="2" Style="{StaticResource Label}" Text="Placement" />
+              <ComboBox Grid.Row="2" Grid.Column="1" ItemsSource="{Binding Placements}" SelectedItem="{Binding SelectedPlacement}" DisplayMemberPath="Label"
+                        ToolTip="{Binding SelectedPlacement.Description}" />
+
+              <TextBlock Grid.Row="3" Style="{StaticResource Label}" Text="Category" />
+              <ComboBox Grid.Row="3" Grid.Column="1" ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}" DisplayMemberPath="Name"
+                        ToolTip="Only categories that Revit accepts for DirectShape elements are listed." />
+
+              <TextBlock Grid.Row="4" Style="{StaticResource Label}" Text="Grouping" />
+              <ComboBox Grid.Row="4" Grid.Column="1" ItemsSource="{Binding Groupings}" SelectedItem="{Binding SelectedGrouping}" DisplayMemberPath="Label" />
+
+              <TextBlock Grid.Row="5" Style="{StaticResource Label}" Text="Geometry" />
+              <ComboBox Grid.Row="5" Grid.Column="1" ItemsSource="{Binding GeometryModes}" SelectedItem="{Binding SelectedGeometryMode}" DisplayMemberPath="Label"
+                        ToolTip="{Binding SelectedGeometryMode.Description}" />
+
+              <TextBlock Grid.Row="6" Style="{StaticResource Label}" Text="Materials" VerticalAlignment="Top" Margin="0,6,12,0" />
+              <StackPanel Grid.Row="6" Grid.Column="1">
+                <ComboBox ItemsSource="{Binding MaterialModeOptions}" SelectedItem="{Binding SelectedMaterialMode}" DisplayMemberPath="Label" />
+                <TextBlock Style="{StaticResource Note}" Text="{Binding MaterialModeExplanation}" />
+                <TextBlock Style="{StaticResource Note}" Text="{Binding MaterialModeReason}" FontStyle="Italic" />
+                <StackPanel Orientation="Horizontal" Visibility="{Binding IsPaletteSizeVisible, Converter={StaticResource BoolToVisibility}}">
+                  <TextBlock Style="{StaticResource Label}" Text="Palette size" />
+                  <TextBox Width="60" Text="{Binding PaletteSize, UpdateSourceTrigger=LostFocus}" />
+                  <TextBlock Style="{StaticResource Note}" Margin="8,0,0,0" VerticalAlignment="Center" Text="colors (each becomes one flat material)" />
+                </StackPanel>
+              </StackPanel>
+
+              <TextBlock Grid.Row="7" Grid.ColumnSpan="2" Style="{StaticResource Note}" Margin="0,6,0,0" Text="{Binding TextureFolderText}"
+                         Visibility="{Binding TextureFolderText, Converter={StaticResource NullToCollapsed}}" />
+            </Grid>
+          </GroupBox>
+        </Grid>
+
+        <!-- Simplify: off unless the user turns it on (or applies the recommendation). -->
+        <GroupBox>
+          <GroupBox.Header>
+            <CheckBox Content="Simplify" IsChecked="{Binding IsSimplifyEnabled}" FontWeight="SemiBold" />
+          </GroupBox.Header>
+          <StackPanel IsEnabled="{Binding IsSimplifyEnabled}">
+            <StackPanel Orientation="Horizontal" Margin="0,2">
+              <RadioButton GroupName="Target" IsChecked="{Binding IsPercentTarget}" Content="Keep" VerticalAlignment="Center" Width="90" />
+              <Slider Width="220" Minimum="1" Maximum="100" VerticalAlignment="Center" Value="{Binding SimplifyPercent}" IsEnabled="{Binding IsPercentTarget}" />
+              <TextBox Width="60" Margin="8,0,0,0" Text="{Binding SimplifyPercent, UpdateSourceTrigger=LostFocus, StringFormat=0.#}" IsEnabled="{Binding IsPercentTarget}" />
+              <TextBlock Margin="4,0,0,0" VerticalAlignment="Center" Text="% of the faces" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0,2">
+              <RadioButton GroupName="Target" IsChecked="{Binding IsCountTarget}" Content="Target" VerticalAlignment="Center" Width="90" />
+              <TextBox Width="120" Text="{Binding SimplifyTriangleCount, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding IsCountTarget}" />
+              <TextBlock Margin="4,0,0,0" VerticalAlignment="Center" Text="faces in total" />
+            </StackPanel>
+            <TextBlock Style="{StaticResource Note}" Margin="0,4,0,0" Text="{Binding EstimateText}" />
+            <TextBlock Style="{StaticResource Note}" Text="Open edges, material boundaries and the overall shape are preserved; small parts keep a minimum number of faces." />
+          </StackPanel>
+        </GroupBox>
+      </StackPanel>
+    </ScrollViewer>
+  </DockPanel>
+</Window>
