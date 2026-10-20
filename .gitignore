@@ -1,0 +1,17 @@
+# Build output
+bin/
+obj/
+artifacts/
+dist/
+TestResults/
+*.user
+*.suo
+.vs/
+.idea/
+*.swp
+# Generated test fixtures
+tests/**/fixtures-out/
+# Never commit Autodesk binaries
+RevitAPI*.dll
+AdWindows.dll
+UIFramework*.dll

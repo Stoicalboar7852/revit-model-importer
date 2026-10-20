@@ -1,0 +1,16 @@
+<Project>
+  <ItemGroup>
+    <!-- Worker only: loads 3D formats. MIT (wrapper) + BSD-3-Clause (native Assimp). -->
+    <PackageVersion Include="AssimpNetter" Version="6.0.5" />
+    <!-- Worker only: image decoding. Unlicense OR MIT / MIT. -->
+    <PackageVersion Include="StbImageSharp" Version="2.30.16" />
+    <PackageVersion Include="Pfim" Version="0.11.4" />
+    <!-- Revit reference assemblies (compile only, never shipped). Version chosen per Revit year in the add-in project. -->
+    <PackageVersion Include="Nice3point.Revit.Api.RevitAPI" Version="$(RevitApiPackageVersion)" />
+    <PackageVersion Include="Nice3point.Revit.Api.RevitAPIUI" Version="$(RevitApiPackageVersion)" />
+    <!-- Tests -->
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageVersion Include="xunit" Version="2.9.3" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
+  </ItemGroup>
+</Project>
