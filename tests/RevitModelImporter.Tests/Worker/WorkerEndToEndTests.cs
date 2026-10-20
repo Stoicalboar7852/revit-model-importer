@@ -151,7 +151,7 @@ public sealed class WorkerEndToEndTests : IDisposable
     public void EmbeddedTexture_IsExtracted(string file)
     {
         var analysis = WorkerHarness.Analyze(_fixtures[file]);
-        Assert.Equal(1, analysis.TexturesEmbedded);
+        Assert.True(analysis.TexturesEmbedded == 1, Diagnose(file, analysis));
 
         var textures = Path.Combine(_out, "tex-" + file);
         var result = WorkerHarness.Convert(new ConvertRequest
@@ -472,6 +472,18 @@ public sealed class WorkerEndToEndTests : IDisposable
         _output.WriteLine($"Cancelled after {sw.ElapsedMilliseconds} ms: {e.GetType().Name}");
         Assert.True(sw.Elapsed < TimeSpan.FromSeconds(5));
         Assert.False(File.Exists(request.OutputPath));
+    }
+
+    /// <summary>Failure details for CI logs: what the worker saw and the texture-related lines of the file.</summary>
+    private string Diagnose(string file, AnalysisResult a)
+    {
+        var path = _fixtures[file];
+        var text = File.ReadAllText(path, System.Text.Encoding.Latin1);
+        var lines = text.Split('\n')
+            .Where(l => l.Contains("Video", StringComparison.Ordinal) || l.Contains("Filename", StringComparison.OrdinalIgnoreCase) || l.Contains("Content", StringComparison.Ordinal) || l.Contains("Texture", StringComparison.Ordinal))
+            .Select(l => l.Trim().Length > 120 ? l.Trim()[..120] + "…" : l.Trim())
+            .Take(30);
+        return $"{file}: size={new FileInfo(path).Length} textures={a.TextureCount} found={a.TexturesFound} embedded={a.TexturesEmbedded} missing=[{string.Join(", ", a.MissingTextures)}] materials={a.MaterialCount} mode={a.RecommendedMaterialMode} warnings=[{string.Join(" | ", a.Warnings)}]\n" + string.Join("\n", lines);
     }
 
     private static ImportDialogViewModel ViewModelFor(AnalysisResult analysis) =>

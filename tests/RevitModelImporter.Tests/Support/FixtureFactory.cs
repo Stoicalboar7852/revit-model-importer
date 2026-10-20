@@ -30,9 +30,16 @@ public sealed class FixtureFactory : IDisposable
 
     private readonly Dictionary<string, string> _files = new(StringComparer.Ordinal);
 
+    /// <summary>Set to a folder to keep the generated models there (e.g. for the manual test plan).</summary>
+    public const string KeepDirectoryVariable = "RMI_FIXTURES_DIR";
+
+    private readonly bool _keep;
+
     public FixtureFactory()
     {
-        Root = Path.Combine(Path.GetTempPath(), "rmi-fixtures-" + Guid.NewGuid().ToString("N")[..8]);
+        var keep = Environment.GetEnvironmentVariable(KeepDirectoryVariable);
+        _keep = !string.IsNullOrWhiteSpace(keep);
+        Root = _keep ? Path.GetFullPath(keep!) : Path.Combine(Path.GetTempPath(), "rmi-fixtures-" + Guid.NewGuid().ToString("N")[..8]);
         Directory.CreateDirectory(Root);
         using var ctx = new AssimpContext();
 
@@ -44,7 +51,16 @@ public sealed class FixtureFactory : IDisposable
         foreach (var (format, file) in TexturedCubeExports)
         {
             var embed = format is "glb2" or "fbx" or "fbxa";
-            var scene = TexturedCubeScene(embed ? brickPng : null);
+            var png = brickPng;
+            if (format == "fbxa" && png.Length % 3 == 0)
+            {
+                // Assimp 6.0's ASCII FBX exporter writes invalid base64 ("====" padding) when the payload length
+                // is a multiple of 3, and its reader then drops the texture. The PNG's length depends on the
+                // platform's zlib, so pad it by one byte (decoders ignore data after IEND).
+                png = [.. png, 0];
+            }
+
+            var scene = TexturedCubeScene(embed ? png : null);
             if (format == "plyb")
             {
                 // Assimp's binary PLY exporter declares RGBA vertex colours but writes UVs for meshes with
@@ -99,6 +115,11 @@ public sealed class FixtureFactory : IDisposable
 
     public void Dispose()
     {
+        if (_keep)
+        {
+            return;
+        }
+
         try
         {
             Directory.Delete(Root, recursive: true);

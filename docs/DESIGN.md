@@ -307,6 +307,22 @@ Each material created by the importer gets an Extensible Storage entity (schema
 texture size. Before creating a material the add-in looks up an existing material with the same signature and
 reuses it.
 
-## 5. Things that could not be verified here
+## 5. Assimp 6.0 issues found while testing
+
+* **FindDegenerates area check drops valid small triangles.** Its area epsilon is absolute, so a 25 mm sphere
+  lost ~10 % of its faces and a dense unit sphere lost the faces near its poles. The worker disables the area check
+  (`AI_CONFIG_PP_FD_CHECKAREA = 0`) and leaves zero-area removal to `MeshCleanup`, which works after unit
+  conversion with Revit's tolerances.
+* **Binary PLY exported by Assimp with UVs is malformed** (the header declares RGBA colours, the data holds UVs)
+  and **reading it back segfaults Assimp** on Linux. Kept as `crash_assimp_malformed.ply` to prove that a native
+  crash only ends the worker process (the add-in reports it; Revit is unaffected). Well-formed binary PLY files,
+  with or without colours, load fine.
+* **ASCII FBX export writes invalid base64** (`====` padding) for embedded data whose length is a multiple of 3, and
+  the reader then drops the texture. Only Assimp-written ASCII FBX files are affected; the test fixture pads its PNG.
+  This was found because CI's .NET (different zlib) produced a PNG of such a length.
+* **3DS export converts Y-up to Z-up** and the importer does not convert back, so a round trip moves the model;
+  3DS defaults to Z-up in the dialog.
+
+## 6. Things that could not be verified here
 See the README's "Verification status" section; in short, nothing that needs Revit (ribbon, dialogs on screen,
 DirectShape creation, appearance assets, undo, rejected-face counts, timings in Revit) has been run in Revit.

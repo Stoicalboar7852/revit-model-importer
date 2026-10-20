@@ -68,10 +68,13 @@ public sealed class TextureTests : IDisposable
         File.WriteAllText(Path.Combine(_dir, "elsewhere", "fabric.png"), "x");
         var resolver = new TextureResolver(model, [Path.Combine(_dir, "elsewhere")]);
 
+        // Windows file systems are case-insensitive, so there the path may come back in the casing it was asked for.
+        var ignoreCase = OperatingSystem.IsWindows();
+
         // Relative path with wrong case and Windows separators.
-        Assert.Equal(Path.Combine(_dir, "model", "sub", "Metal.png"), resolver.Resolve(@"SUB\metal.PNG"));
+        Assert.Equal(Path.Combine(_dir, "model", "sub", "Metal.png"), resolver.Resolve(@"SUB\metal.PNG"), ignoreCase);
         // Absolute path from another machine, file now in the sibling Textures folder.
-        Assert.Equal(Path.Combine(_dir, "model", "Textures", "Wood.JPG"), resolver.Resolve(@"C:\Users\someone\Desktop\maps\wood.jpg"));
+        Assert.Equal(Path.Combine(_dir, "model", "Textures", "Wood.JPG"), resolver.Resolve(@"C:\Users\someone\Desktop\maps\wood.jpg"), ignoreCase);
         // Found in a folder the user pointed to.
         Assert.Equal(Path.Combine(_dir, "elsewhere", "fabric.png"), resolver.Resolve("fabric.png"));
         // Percent-encoded glTF URI.
