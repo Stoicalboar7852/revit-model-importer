@@ -25,7 +25,7 @@ public static class ModelAnalyzer
             TriangleCount = objects.Sum(o => (long)o.TriangleCount),
             SourcePolygonCount = scene.SourcePolygonCount,
             VertexCount = objects.Sum(o => (long)o.VertexCount),
-            MaterialCount = scene.Materials.Count,
+            MaterialCount = objects.SelectMany(o => o.TriangleMaterials).Distinct().Count(),
             DetectedUnit = scene.DetectedUnit,
             UnitSource = scene.UnitSource,
             DefaultUpAxis = scene.DefaultUpAxis,

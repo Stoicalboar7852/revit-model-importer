@@ -99,6 +99,7 @@ public sealed class AnalysisResult
 
     public long VertexCount { get; set; }
 
+    /// <summary>Materials used by at least one triangle.</summary>
     public int MaterialCount { get; set; }
 
     public int TextureCount { get; set; }

@@ -87,6 +87,12 @@ public static class Program
             return 0;
         }
 
+        // Undocumented: simulates a fatal native crash so tests can prove a crash cannot take down the caller.
+        if (args[0] == "--self-test-crash")
+        {
+            Environment.FailFast("Revit Model Importer worker: simulated crash for testing.");
+        }
+
         var command = args[0];
         var options = CommandLine.Parse(args.Skip(1).ToArray());
         return command switch

@@ -81,11 +81,15 @@ public sealed class AssimpSceneLoader
         try
         {
             // Drop points and lines entirely; keep FBX free of $AssimpFbx$ pivot helper nodes; let
-            // FindDegenerates remove (not convert) degenerate faces; keep FBX in its own units (we read
+            // FindDegenerates remove (not convert to lines) degenerate faces; keep FBX in its own units (we read
             // UnitScaleFactor) and its own up axis (we offer the choice).
             lib.SetImportPropertyInteger(store, AiConfigs.AI_CONFIG_PP_SBP_REMOVE, (int)(PrimitiveType.Point | PrimitiveType.Line));
             lib.SetImportPropertyInteger(store, AiConfigs.AI_CONFIG_IMPORT_FBX_PRESERVE_PIVOTS, 0);
             lib.SetImportPropertyInteger(store, AiConfigs.AI_CONFIG_PP_FD_REMOVE, 1);
+            // FindDegenerates' area check uses an absolute epsilon and silently drops valid small triangles
+            // (a 25 mm sphere lost ~10 % of its faces). Only remove faces with repeated indices here;
+            // MeshCleanup removes zero-area triangles with a scale-aware test after unit conversion.
+            lib.SetImportPropertyInteger(store, AiConfigs.AI_CONFIG_PP_FD_CHECKAREA, 0);
             lib.SetImportPropertyInteger(store, AiConfigs.AI_CONFIG_FBX_CONVERT_TO_M, 0);
             lib.SetImportPropertyInteger(store, AiConfigs.AI_CONFIG_IMPORT_FBX_READ_ANIMATIONS, 0);
             lib.SetImportPropertyInteger(store, AiConfigs.AI_CONFIG_IMPORT_FBX_READ_CAMERAS, 0);

@@ -23,7 +23,8 @@ public sealed class CleanupReport
 
     public long DuplicateTriangles { get; set; }
 
-    /// <summary>Triangles lost because they had an edge shorter than the minimum edge length.</summary>
+    /// <summary>Valid triangles lost because they are smaller than Revit's tolerances (an edge shorter than the
+    /// minimum edge length, or all vertices within the vertex tolerance).</summary>
     public long ShortEdgeTriangles { get; set; }
 
     public long RemovedTriangles => DegenerateTriangles + DuplicateTriangles + ShortEdgeTriangles;
@@ -76,7 +77,16 @@ public static class MeshCleanup
             alive[t] = a != b && b != c && a != c;
             if (!alive[t])
             {
-                report.DegenerateTriangles++;
+                // A triangle that was fine before welding is lost to Revit's tolerance (it is smaller than
+                // the vertex tolerance), which says more about wrong units than about bad input data.
+                if (WasValid(mesh, t))
+                {
+                    report.ShortEdgeTriangles++;
+                }
+                else
+                {
+                    report.DegenerateTriangles++;
+                }
             }
         }
 
@@ -337,6 +347,20 @@ public static class MeshCleanup
         mesh.Indices = newIndices;
         mesh.TriangleMaterials = newMats;
         mesh.CornerUVs = newUvs;
+    }
+
+    private static bool WasValid(ObjectMesh mesh, int t)
+    {
+        var a = mesh.Indices[3 * t];
+        var b = mesh.Indices[3 * t + 1];
+        var c = mesh.Indices[3 * t + 2];
+        if (a == b || b == c || a == c)
+        {
+            return false;
+        }
+
+        var pa = mesh.GetVertex(a);
+        return Vec3.Cross(mesh.GetVertex(b) - pa, mesh.GetVertex(c) - pa).LengthSquared > 0;
     }
 
     private static (int, int, int) SortedKey(int a, int b, int c)
