@@ -248,6 +248,11 @@ rejects other magic values and newer major versions with a clear message.
 * While elements are created, a progress window runs on its own STA thread (its own dispatcher), because the Revit
   thread is busy. Its Cancel button sets a flag that is checked between elements; on cancel the group is
   `RollBack()`-ed so nothing is left behind.
+* **Deviation from "parent all dialogs to Revit's main window":** this one progress window is *not* owned by Revit's
+  window. A cross-thread owner/owned relationship makes Windows attach the two threads' input queues, so the
+  progress window (and its Cancel button) would freeze exactly while Revit's thread is busy creating elements.
+  It is centred on Revit's window and kept topmost instead. Every other window (file dialog, analysis/conversion
+  progress, Import dialog, summary, settings, error dialogs) is owned by `UIApplication.MainWindowHandle`.
 * Every transaction gets an `IFailuresPreprocessor` that deletes warnings (collecting their text for the summary) and
   resolves errors where Revit offers a resolution; otherwise it rolls the transaction back.
 
@@ -261,17 +266,22 @@ number and the source polygon count when they differ.
 * Up axis: glTF, OBJ, FBX, DAE (Assimp normalises Collada `up_axis` to Y-up), X, 3D, AC… → Y-up;
   STL, PLY, 3MF, 3DS, OFF → Z-up. FBX's own `UpAxis` metadata is honoured when present.
 * Units auto-detected: glTF/GLB (always metres), FBX (`UnitScaleFactor` metadata, centimetres per unit),
-  3MF (millimetres unless the file says otherwise, Assimp normalises), DAE (`<unit meter>`). Other formats → the user
-  picks (default: last choice for that format, else millimetres for STL/3MF/PLY and metres otherwise).
+  3MF (the `unit` attribute of the model part, read by the worker from the zip; millimetres by default per the 3MF
+  spec), DAE (Assimp applies `<unit meter>` to the root node, so the scene arrives in metres). Other formats → the
+  user picks (default: last choice for that format, else millimetres for STL/3MF/PLY and metres otherwise).
 
 ### 4.3 Simplification
 * `IMeshSimplifier` + `QuadricSimplifier`: Garland–Heckbert quadric error metric edge collapse following the
   structure of Sven Forstmann's MIT-licensed *Fast-Quadric-Mesh-Simplification* (iterative threshold schedule,
   per-triangle error caching, deleted-triangle flags), rewritten in C# with these changes:
-  * **Borders and material seams are locked**: an edge used by one triangle (open border) or by triangles with
-    different materials (seam) marks its vertices as constrained; constrained vertices may only collapse into a
-    neighbour along the same constrained edge and the new position is restricted to the original constrained
-    vertex, so silhouettes and seams keep their exact shape.
+  * **Borders and material seams are preserved**: an edge used by one triangle (open border), by more than two
+    (non-manifold) or by triangles with different materials (seam) marks its vertices as constrained. Constrained
+    vertices never move. An interior vertex may collapse onto a constrained one. Two constrained vertices may only
+    merge along a constrained edge, onto one of their original positions, and only while the border stays straight:
+    each constrained edge adds a plane through the edge, perpendicular to its face, with weight 1000, and such
+    collapses are refused above an error equivalent to 1e-4 of the model diagonal, however far the threshold
+    schedule has climbed. Every border vertex of the result is an original border vertex and every border edge lies
+    on the original outline (`OpenGrid_BorderIsPreserved`, `MaterialSeam_IsPreserved`).
   * **Flip and degeneracy guard**: a collapse is rejected if any surviving triangle's normal turns by more than ~78°
     or its area collapses; a final pass removes zero-area triangles.
   * **UVs are carried through every collapse** (per-corner/wedge UVs, re-interpolated barycentrically at the new
@@ -279,6 +289,11 @@ number and the source polygon count when they differ.
     would turn every colour boundary into a material seam and block simplification of textured scans.
 * A global target (ratio or triangle count) is distributed across meshes in proportion to their triangle counts
   with a per-mesh minimum (default 12 triangles, never more than the mesh has), so small parts survive.
+* Measured timings (`OneMillionTriangles_ReducedToTenPercent_InAFewSeconds`, 998,000 → 99,800 triangles, closed UV
+  sphere, single thread): Release build in this 4-vCPU container 2.0–2.1 s warm, 3.4 s including JIT; Debug build
+  5.2–5.5 s; about 1 s on the GitHub `ubuntu-latest` runner. End to end through the worker, the 299,040-triangle PLY
+  sphere simplified to the 45,000-face recommendation in about 1–3 s including loading. Objects are simplified in
+  parallel (one thread per object), so multi-object models scale with cores.
 
 ### 4.4 Material modes
 | Mode | What it does | Good for | Default when |
