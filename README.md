@@ -213,8 +213,8 @@ Design decisions, research findings (with what was checked and how) and deviatio
     and instancing are flattened correctly; Y-up and centimetre models are handled; a tiny model read in the wrong
     unit is flagged before and after conversion; the 300k-face sphere triggers the strong recommendation and
     simplifies to the suggestion within ±5 %; missing textures are reported and can be located in another folder
-    (case-insensitively); corrupt files return exit code 5; a native crash (deliberate, and a real Assimp segfault on
-    a malformed PLY) only ends the worker; Cancel kills the worker.
+    (case-insensitively); corrupt files return exit code 5; a native crash only ends the worker (a deliberate one on both
+    systems, and a real Assimp segfault on a malformed PLY, observed on Linux); Cancel kills the worker.
   - **Simplifier**: target within ±5 %, bounding box within 1 %, borders and material seams kept exactly, no
     degenerate or flipped triangles, UVs carried, 1M → 100k triangles in a few seconds.
   - **View model**: one test per recommendation rule (and more), estimates, units/size, remembered choices.
