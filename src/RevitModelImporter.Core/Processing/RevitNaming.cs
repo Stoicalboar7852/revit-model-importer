@@ -24,8 +24,8 @@ public static class RevitNaming
         var lastWasSpace = false;
         foreach (var c in name)
         {
-            var ch = IsProhibited(c) ? '_' : c;
-            if (char.IsWhiteSpace(ch))
+            var ch = char.IsWhiteSpace(c) ? ' ' : IsProhibited(c) ? '_' : c;
+            if (ch == ' ')
             {
                 if (!lastWasSpace)
                 {
