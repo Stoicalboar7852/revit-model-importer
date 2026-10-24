@@ -34,7 +34,8 @@ with a screenshot.
 - [ ] Start Revit. If the security dialog appears, choose **Always Load**. No error dialog at startup.
 - [ ] Ribbon tab **Model Importer** exists with **Import 3D Model** and **Settings** buttons, both with icons
       (32 px on the ribbon; check the 16 px version by shrinking the panel if possible).
-- [ ] With no project open, **Import 3D Model** is greyed out; with a project open it is enabled.
+- [ ] With a project open in any view (including a 3D view), **Import 3D Model** is enabled. With no project open
+      it is either greyed out (Revit's default) or shows "No project is open" when clicked.
 
 ## 2. File picker
 

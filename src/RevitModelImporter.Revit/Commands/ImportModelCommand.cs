@@ -32,6 +32,13 @@ public sealed class ImportModelCommand : IExternalCommand
         var doc = uiapp.ActiveUIDocument?.Document;
         if (doc is null)
         {
+            ShowError("No project is open", "Open or create a project first, then run Import 3D Model again.", null);
+            return Result.Cancelled;
+        }
+
+        if (doc.IsReadOnly || doc.IsLinked)
+        {
+            ShowError("The project cannot be changed right now", "Revit reports the active document as read-only at the moment. Finish or cancel the current operation and try again.", null);
             return Result.Cancelled;
         }
 

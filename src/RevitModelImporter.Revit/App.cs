@@ -25,7 +25,8 @@ public sealed class App : IExternalApplication
         {
             ToolTip = "Import an OBJ, FBX, glTF/GLB, DAE, STL, PLY, 3DS, 3MF or other 3D model as DirectShape elements, with its materials and textures.",
             LongDescription = "The file is analyzed first. You then choose units, orientation, placement, category, material mode and optional simplification. The whole import is a single undoable step.",
-            AvailabilityClassName = typeof(DocumentAvailability).FullName,
+            // No AvailabilityClassName: Revit's default (enabled while a document is open) is what we want, and a
+            // custom check that tested Document.IsReadOnly kept the button disabled in Revit 2025.5.
             LargeImage = IconFactory.Import(32),
             Image = IconFactory.Import(16),
         };
