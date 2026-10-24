@@ -1,0 +1,79 @@
+Revit Model Importer {VERSION} for Revit {YEAR}
+===============================================
+
+This package is for Revit {YEAR} only. Revit 2025, 2026 and 2027 each have their own package.
+
+BEFORE YOU START
+- Close Revit.
+- This is an early build. It has passed its automated tests but has not yet been run inside Revit,
+  so try it on a new, empty project or on a copy of a project first.
+
+
+INSTALL (recommended)
+---------------------
+1. Extract the zip: right-click it > Extract All... > Extract.
+   (Do not run anything from inside the zip without extracting it first.)
+
+2. Open the extracted folder (the one that contains Install.ps1).
+   Click in the address bar at the top of the Explorer window, type  powershell  and press Enter.
+   A PowerShell window opens in that folder.
+
+3. Paste this line into the PowerShell window and press Enter:
+
+      powershell -ExecutionPolicy Bypass -File .\Install.ps1
+
+   It copies the add-in to  %AppData%\Autodesk\Revit\Addins\{YEAR}\  and should end with
+   "Revit Model Importer installed for Revit {YEAR}". No administrator rights are needed.
+
+4. Start Revit {YEAR}. Revit asks whether to load "Revit Model Importer" because the add-in is not
+   digitally signed: click "Always Load".
+
+5. Open or create a project. A "Model Importer" tab appears on the ribbon with the buttons
+   "Import 3D Model" and "Settings".
+
+
+INSTALL BY HAND (if the script does not run)
+--------------------------------------------
+1. Before extracting: right-click the zip > Properties > tick "Unblock" (bottom of the General tab) > OK.
+   Then extract it.
+2. Press Win+R, paste  %AppData%\Autodesk\Revit\Addins\{YEAR}  and press Enter.
+   (If Windows says the folder does not exist, create a folder named {YEAR} inside
+   %AppData%\Autodesk\Revit\Addins and open it.)
+3. Copy  RevitModelImporter.addin  and the whole  RevitModelImporter  folder from the extracted package
+   into that folder. You should end up with:
+
+      ...\Addins\{YEAR}\RevitModelImporter.addin
+      ...\Addins\{YEAR}\RevitModelImporter\RevitModelImporter.Revit.dll
+      ...\Addins\{YEAR}\RevitModelImporter\Worker\RevitModelImporter.Worker.exe
+
+4. Start Revit {YEAR} and click "Always Load".
+
+
+QUICK TEST
+----------
+1. Model Importer > Import 3D Model, and pick a model (OBJ, FBX, GLB/glTF, DAE, STL, PLY, 3DS, 3MF, ...).
+2. In the dialog, check the Size line: if the model is far too big or too small, change "Source units".
+3. Click Import. A summary appears when it is done.
+4. Ctrl+Z removes the whole import in one step.
+
+Textures are copied to a folder next to your project (<project name>_textures). Keep that folder
+with the project: Revit only stores the path to each image.
+
+
+IF SOMETHING GOES WRONG
+-----------------------
+- No "Model Importer" tab: check the three files above are in place, and that this package matches
+  your Revit version (revit-version.txt says which one it is for).
+- An error while importing: the error dialog has a "details" section, and the import summary has a
+  "Copy to clipboard" button. Please send both along with the model file if you can.
+- Settings are kept in  %AppData%\RevitModelImporter\settings.json.
+
+
+UNINSTALL
+---------
+Close Revit, then in the extracted package folder run:
+
+      powershell -ExecutionPolicy Bypass -File .\Uninstall.ps1
+
+or delete  RevitModelImporter.addin  and the  RevitModelImporter  folder from
+%AppData%\Autodesk\Revit\Addins\{YEAR}\.  Elements you already imported stay in your projects.

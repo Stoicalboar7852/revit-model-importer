@@ -10,7 +10,7 @@
       RevitModelImporter.addin
       RevitModelImporter\                       add-in (RevitModelImporter.Revit.dll + RevitModelImporter.Core.dll)
       RevitModelImporter\Worker\                converter process (+ native Assimp)
-      Install.ps1, Uninstall.ps1, README.md, LICENSE, THIRD_PARTY_NOTICES.md, revit-version.txt
+      INSTALL.txt, Install.ps1, Uninstall.ps1, README.md, LICENSE, THIRD_PARTY_NOTICES.md, revit-version.txt
 
   Fails if any Autodesk assembly ended up in a package.
 
@@ -84,11 +84,17 @@ foreach ($year in $RevitVersion) {
     }
     Set-Content -Path (Join-Path $stage 'revit-version.txt') -Value $year -NoNewline
 
+    # Installation instructions for this Revit year, with Windows line endings so Notepad shows them properly.
+    $install = (Get-Content (Join-Path $root 'packaging/INSTALL.txt') -Raw).Replace('{YEAR}', $year).Replace('{VERSION}', $version)
+    $install = ($install -replace "`r`n", "`n") -replace "`n", "`r`n"
+    [System.IO.File]::WriteAllText((Join-Path $stage 'INSTALL.txt'), $install, [System.Text.UTF8Encoding]::new($false))
+
     # Never ship Autodesk binaries.
     $autodesk = Get-ChildItem $stage -Recurse -File | Where-Object { $_.Name -match '^(RevitAPI.*|AdWindows|UIFramework.*|RevitNET)\.dll$' }
     if ($autodesk) { throw "Autodesk assemblies found in the package: $($autodesk.FullName -join ', ')" }
 
     $required = @(
+        'INSTALL.txt',
         'RevitModelImporter.addin',
         'RevitModelImporter/RevitModelImporter.Revit.dll',
         'RevitModelImporter/RevitModelImporter.Core.dll',
