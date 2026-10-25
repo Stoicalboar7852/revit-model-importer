@@ -65,8 +65,9 @@ Var Found2027
 
 ; ----- Look and feel -------------------------------------------------------------------------------------------------
 
-; Relative to this script, whatever the working directory makensis was started in.
-!define ART "${__FILEDIR__}\art"
+; Source paths use backslashes: Windows makensis does not split File paths at "/" (CI failed with "no files found"),
+; and makensis on Linux turns "\" into "/". makensis runs in this script's folder, so the art path is relative to it.
+!define ART "art"
 !define MUI_ICON "${ART}\installer.ico"
 !define MUI_UNICON "${ART}\installer.ico"
 !define MUI_WELCOMEFINISHPAGE_BITMAP "${ART}\wizard.bmp"
@@ -168,9 +169,9 @@ Section "Revit ${YEAR}" SecRevit${YEAR}
   ; Replace a previous version completely so no stale files remain.
   RMDir /r "${ADDINS}\${YEAR}\RevitModelImporter"
   SetOutPath "${ADDINS}\${YEAR}"
-  File "${STAGE}/Revit${YEAR}/RevitModelImporter.addin"
+  File "${STAGE}\Revit${YEAR}\RevitModelImporter.addin"
   SetOutPath "${ADDINS}\${YEAR}\RevitModelImporter"
-  File /r "${STAGE}/Revit${YEAR}/RevitModelImporter/*"
+  File /r "${STAGE}\Revit${YEAR}\RevitModelImporter\*"
   WriteRegStr HKCU "${PRODUCT_KEY}" "Revit${YEAR}" "${VERSION}"
 SectionEnd
 !macroend
@@ -187,9 +188,9 @@ SectionEnd
 
 Section "-Uninstaller and documents"
   SetOutPath "$INSTDIR"
-  File "/oname=README.md" "${ROOT}/README.md"
-  File "/oname=LICENSE.txt" "${ROOT}/LICENSE"
-  File "/oname=THIRD_PARTY_NOTICES.md" "${ROOT}/THIRD_PARTY_NOTICES.md"
+  File "/oname=README.md" "${ROOT}\README.md"
+  File "/oname=LICENSE.txt" "${ROOT}\LICENSE"
+  File "/oname=THIRD_PARTY_NOTICES.md" "${ROOT}\THIRD_PARTY_NOTICES.md"
   WriteUninstaller "$INSTDIR\Uninstall.exe"
 
   StrCpy $1 0

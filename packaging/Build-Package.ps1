@@ -143,8 +143,7 @@ if ($Installer -ne 'Never') {
         $setup = Join-Path $OutputDirectory "RevitModelImporter-$version-Setup.exe"
         $nsisArgs = @('-V2', '-WX', "-DVERSION=$version", "-DSTAGE=$OutputDirectory", "-DROOT=$root", "-DOUTFILE=$setup")
         $nsisArgs += $RevitVersion | ForEach-Object { "-DREVIT$_" }
-        # GetFullPath turns forward slashes into backslashes on Windows; with a mixed path CI's makensis did not find
-        # files next to the script. (The script also locates its art from ${__FILEDIR__} now.)
+        # Native separators throughout (GetFullPath turns / into \ on Windows); the script's own paths use \.
         $nsisArgs += [System.IO.Path]::GetFullPath((Join-Path $root 'packaging/installer/RevitModelImporter.nsi'))
         Write-Host "`n=== Installer ===" -ForegroundColor Cyan
         & $makensis @nsisArgs
