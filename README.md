@@ -98,6 +98,25 @@ Other texture facts:
 Requirements: Windows 10/11 x64 with Revit 2025, 2026 or 2027. Nothing else — the add-in uses the .NET runtime that
 Revit itself runs on.
 
+### Installer (recommended)
+
+Run `RevitModelImporter-<version>-Setup.exe` (GitHub Actions artifact *RevitModelImporter-Setup*, or build it
+yourself, below). One installer covers Revit 2025, 2026 and 2027:
+
+- it ticks the Revit versions it finds on the PC (program folder, all-users add-ins folder, user profile or an
+  earlier install) and lets you change the choice;
+- it installs for the current Windows user only — the same files `Install.ps1` copies, in
+  `%AppData%\Autodesk\Revit\Addins\<year>\` — so it needs no administrator rights;
+- it asks you to close Revit first, replaces an earlier version completely, and appears in **Settings ▸ Apps ▸
+  Installed apps** for uninstalling;
+- silent: `RevitModelImporter-<version>-Setup.exe /S` installs for the versions found (exit code 2 if Revit is
+  running); `"%LocalAppData%\Programs\Revit Model Importer\Uninstall.exe" /S` removes it.
+
+The installer is not code-signed, so Windows SmartScreen may say "Windows protected your PC": choose **More info ▸
+Run anyway**. Revit also asks once whether to load the unsigned add-in: choose **Always Load**.
+
+### Zip and script
+
 1. Download the zip for your Revit version (`RevitModelImporter-<version>-Revit<year>.zip`) from the GitHub Actions
    run (artifacts *RevitModelImporter-Revit2025/2026/2027*) or build it yourself (below).
 2. Extract it and run, in that folder:
@@ -113,7 +132,7 @@ Revit itself runs on.
 Manual install: copy `RevitModelImporter.addin` and the `RevitModelImporter\` folder from the zip into
 `%AppData%\Autodesk\Revit\Addins\<year>\` and unblock the files (right-click ▸ Properties ▸ Unblock).
 
-**Uninstall:** close Revit and run `.\Uninstall.ps1` (add `-RemoveSettings` / `-RemoveTextureCache` to also delete
+**Uninstall:** use **Settings ▸ Apps** if you used the installer; otherwise close Revit and run `.\Uninstall.ps1` (add `-RemoveSettings` / `-RemoveTextureCache` to also delete
 settings and the unsaved-project texture folder). Texture folders next to projects are never deleted.
 
 ## Usage
@@ -192,9 +211,14 @@ the WPF add-in builds on Linux thanks to `EnableWindowsTargeting`.
 ```bash
 dotnet build RevitModelImporter.sln -c Release          # Core, Worker, Tests, add-in for Revit 2026 and 2027
 dotnet build src/RevitModelImporter.Revit -c Release -f net8.0-windows -p:RevitVersion=2025   # Revit 2025
-dotnet test RevitModelImporter.sln -c Release           # 159 tests, Linux and Windows
+dotnet test RevitModelImporter.sln -c Release           # 161 tests, Linux and Windows
 pwsh ./packaging/Build-Package.ps1                      # dist/RevitModelImporter-<version>-Revit<year>.zip
+                                                        # and dist/RevitModelImporter-<version>-Setup.exe
 ```
+
+The installer needs NSIS 3 (`makensis`; zlib licence, build time only), on Windows or Linux. Without it the zips are
+still built and a warning says the installer was skipped. Its icon and wizard images in `packaging/installer/art`
+are drawn by `packaging/installer/make-art.py` (Pillow) from the ribbon icon's design.
 
 The Revit API comes from the `Nice3point.Revit.Api.RevitAPI`/`RevitAPIUI` reference-assembly packages (compile time
 only, never shipped). No Autodesk DLL is in the repository or the packages.

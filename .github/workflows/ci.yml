@@ -45,9 +45,23 @@ jobs:
           name: test-results-windows
           path: TestResults
 
+      - name: Install NSIS (builds the .exe installer)
+        shell: pwsh
+        run: |
+          if (-not (Get-Command makensis -ErrorAction SilentlyContinue) -and -not (Test-Path "${env:ProgramFiles(x86)}\NSIS\makensis.exe")) {
+            choco install nsis --no-progress -y
+          }
+
       - name: Package
         shell: pwsh
-        run: ./packaging/Build-Package.ps1 -Configuration Release
+        run: ./packaging/Build-Package.ps1 -Configuration Release -Installer Always
+
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: RevitModelImporter-Setup
+          path: dist/RevitModelImporter-*-Setup.exe
+          if-no-files-found: error
 
       - name: Upload Revit 2025 package
         uses: actions/upload-artifact@v4

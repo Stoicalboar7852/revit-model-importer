@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  Builds the Revit Model Importer packages: one zip per Revit version.
+  Builds the Revit Model Importer packages: one zip per Revit version and one .exe installer for all of them.
 
 .DESCRIPTION
   For each Revit version: builds the add-in against that year's Revit API reference assemblies, publishes the
@@ -12,11 +12,15 @@
       RevitModelImporter\Worker\                converter process (+ native Assimp)
       INSTALL.txt, Install.ps1, Uninstall.ps1, README.md, LICENSE, THIRD_PARTY_NOTICES.md, revit-version.txt
 
+  Then, when NSIS 3 (makensis) is available, builds RevitModelImporter-<version>-Setup.exe from the same files:
+  a per-user installer for every built Revit version (packaging/installer/RevitModelImporter.nsi). -Installer Always
+  fails when makensis is missing; Never skips it.
+
   Fails if any Autodesk assembly ended up in a package.
 
 .EXAMPLE
   ./packaging/Build-Package.ps1
-  ./packaging/Build-Package.ps1 -RevitVersion 2026 -Configuration Debug
+  ./packaging/Build-Package.ps1 -RevitVersion 2026 -Configuration Debug -Installer Never
 #>
 [CmdletBinding()]
 param(
@@ -28,7 +32,10 @@ param(
 
     [string] $OutputDirectory,
 
-    [switch] $SkipZip
+    [switch] $SkipZip,
+
+    [ValidateSet('Auto', 'Always', 'Never')]
+    [string] $Installer = 'Auto'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -115,3 +122,31 @@ foreach ($year in $RevitVersion) {
 }
 
 Remove-Item (Join-Path $OutputDirectory 'staging') -Recurse -Force
+
+function Find-MakeNsis {
+    $command = Get-Command makensis -ErrorAction SilentlyContinue
+    if ($command) { return $command.Source }
+    foreach ($dir in ${env:ProgramFiles(x86)}, $env:ProgramFiles) {
+        if ($dir -and (Test-Path (Join-Path $dir 'NSIS/makensis.exe'))) { return Join-Path $dir 'NSIS/makensis.exe' }
+    }
+    return $null
+}
+
+if ($Installer -ne 'Never') {
+    $makensis = Find-MakeNsis
+    if (-not $makensis) {
+        $hint = 'Install NSIS 3 (https://nsis.sourceforge.io, "choco install nsis" or "apt install nsis").'
+        if ($Installer -eq 'Always') { throw "makensis was not found, so the .exe installer cannot be built. $hint" }
+        Write-Warning "makensis was not found, so the .exe installer was not built. $hint"
+    }
+    else {
+        $setup = Join-Path $OutputDirectory "RevitModelImporter-$version-Setup.exe"
+        $nsisArgs = @('-V2', '-WX', "-DVERSION=$version", "-DSTAGE=$OutputDirectory", "-DROOT=$root", "-DOUTFILE=$setup")
+        $nsisArgs += $RevitVersion | ForEach-Object { "-DREVIT$_" }
+        $nsisArgs += Join-Path $root 'packaging/installer/RevitModelImporter.nsi'
+        Write-Host "`n=== Installer ===" -ForegroundColor Cyan
+        & $makensis @nsisArgs
+        if ($LASTEXITCODE -ne 0) { throw "makensis failed with exit code $LASTEXITCODE" }
+        Write-Host "Created $setup" -ForegroundColor Green
+    }
+}

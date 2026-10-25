@@ -37,6 +37,28 @@ with a screenshot.
 - [ ] With a project open in any view (including a 3D view), **Import 3D Model** is enabled. With no project open
       it is either greyed out (Revit's default) or shows "No project is open" when clicked.
 
+### 1b. Installer (`RevitModelImporter-<version>-Setup.exe`)
+
+Checked under Wine (64-bit build of the same script; see `docs/DESIGN.md`), not yet on Windows.
+
+- [ ] Double-click it. SmartScreen may warn (unsigned): **More info ▸ Run anyway**. No UAC prompt appears.
+- [ ] The welcome page shows the blue side image, the product name and version, crisp text at 100 % and 150 % scaling.
+- [ ] **Choose Revit versions**: the installed Revit versions are ticked; the others say "(not found)" and are
+      unticked. Hovering a version explains why. Untick everything and click Install → "Tick at least one Revit
+      version."
+- [ ] Start Revit, then click Install → "Revit is running … click Retry". Cancel stays on the page; close Revit and
+      Retry continues.
+- [ ] After installing, `%AppData%\Autodesk\Revit\Addins\<year>` holds the same files as the zip install (above) for each
+      ticked year, and nothing for unticked years.
+- [ ] **Settings ▸ Apps ▸ Installed apps** lists **Revit Model Importer** with the icon, version 1.0.0 and the
+      publisher.
+- [ ] Revit starts with the **Model Importer** tab (Always Load once).
+- [ ] Run the installer again (upgrade): it completes; no duplicate entry in Installed apps.
+- [ ] Uninstall from Installed apps: it asks to close Revit if it is running, removes the add-in from every Revit year
+      and the Installed apps entry; `%AppData%\RevitModelImporter\settings.json` is kept.
+- [ ] Silent: `Setup.exe /S` installs for the found versions (exit code 0; 2 while Revit runs);
+      `"%LocalAppData%\Programs\Revit Model Importer\Uninstall.exe" /S` removes it.
+
 ## 2. File picker
 
 - [ ] Click **Import 3D Model**. A file dialog opens **in front of Revit**, and Revit's window cannot be clicked

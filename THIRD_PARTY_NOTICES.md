@@ -1,7 +1,7 @@
 # Third-party notices
 
 Revit Model Importer is released under the MIT License (see `LICENSE`). It ships, adapts or uses the following
-third-party components. All of them are under permissive licenses (MIT, BSD-3-Clause, Unlicense). No Autodesk
+third-party components. All of them are under permissive licenses (MIT, BSD-3-Clause, Unlicense, zlib). No Autodesk
 binaries are redistributed: the Revit API is referenced at build time only (see "Build-time only" below).
 
 | Component | Version | Used by | Licence | Shipped |
@@ -14,6 +14,8 @@ binaries are redistributed: the Revit API is referenced at build time only (see 
 | OKLab colour space formulas (Björn Ottosson) | — | Core | public domain / MIT | formulas only |
 | Nice3point.Revit.Api.RevitAPI / RevitAPIUI | 2025.0.2, 2026.0.4, 2027.0.20 | add-in build | see package | **no** (reference assemblies, compile time only) |
 | xUnit, Microsoft.NET.Test.Sdk | 2.9.3 / 17.14.1 | tests | Apache-2.0 / MIT | no |
+| [NSIS](https://nsis.sourceforge.io) (Nullsoft Scriptable Install System) | 3.x | `Setup.exe` | zlib | its installer stub and plug-ins are inside `Setup.exe` |
+| [Pillow](https://python-pillow.org) | any | `packaging/installer/make-art.py` | MIT-CMU | no (draws the installer images at development time) |
 
 ---
 
@@ -188,6 +190,28 @@ SOFTWARE.
 
 The OKLab conversion matrices in `PaletteQuantizer.cs` are Björn Ottosson's published formulas
 (<https://bottosson.github.io/posts/oklab/>), which he placed in the public domain (also offered under MIT).
+
+## NSIS
+
+`RevitModelImporter-<version>-Setup.exe` is built with NSIS and contains its installer stub, the zlib decompressor
+and the nsDialogs/nsExec plug-ins, all under the zlib license below. The installer deliberately uses NSIS's zlib
+compressor, not its LZMA module (which is under the Common Public License with a linking exception), so that only
+permissively licensed code is shipped.
+
+Copyright (C) 1999-2021 Nullsoft and Contributors; 1995-2003 Mark Adler; 1998-2005 Gilles Vollant
+
+This software is provided 'as-is', without any express or implied warranty. In no event will the authors be held
+liable for any damages arising from the use of this software.
+
+Permission is granted to anyone to use this software for any purpose, including commercial applications, and to
+alter it and redistribute it freely, subject to the following restrictions:
+
+1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software.
+   If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is
+   not required.
+2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original
+   software.
+3. This notice may not be removed or altered from any source distribution.
 
 ## Build-time only: Revit API reference assemblies
 

@@ -345,3 +345,28 @@ reuses it.
 ## 6. Things that could not be verified here
 See the README's "Verification status" section; in short, nothing that needs Revit (ribbon, dialogs on screen,
 DirectShape creation, appearance assets, undo, rejected-face counts, timings in Revit) has been run in Revit.
+
+## 7. Installer (`Setup.exe`)
+* **NSIS 3**, because its compiler runs on Linux as well as Windows (the zips and the installer are built by the same
+  `Build-Package.ps1` anywhere) and its runtime is zlib-licensed. The installer uses NSIS's zlib compressor, not
+  LZMA: NSIS's LZMA module is CPL-licensed (with a linking exception), and only permissive code is shipped. Cost:
+  3.6 MB instead of 2.6 MB for all three Revit versions (solid compression stores the shared worker once).
+* **32-bit (x86-unicode) stub**, the target every NSIS distribution can build. It only copies files and writes
+  `HKCU` keys, so nothing depends on its bitness; `$PROGRAMFILES64` is used to look for Revit.
+* **Per user, no elevation** (`RequestExecutionLevel user`): the files go exactly where `Install.ps1` puts them
+  (`%AppData%\Autodesk\Revit\Addins\<year>`), the uninstaller and documents to
+  `%LocalAppData%\Programs\Revit Model Importer`, and the Installed-apps entry to `HKCU\…\Uninstall\RevitModelImporter`.
+  Files written by an installer carry no mark-of-the-web, so nothing needs unblocking.
+* **Revit detection** per year: `Program Files\Autodesk\Revit <year>\Revit.exe`, the all-users add-ins folder
+  (`%ProgramData%\Autodesk\Revit\Addins\<year>`), the per-user profile folder (`%AppData%\Autodesk\Revit\Autodesk
+  Revit <year>`) or an earlier install. Found years are ticked; if none is found every year is ticked.
+* **Revit must be closed** to install or uninstall (a loaded add-in locks its DLLs): `tasklist` CSV output is searched
+  for `"Revit.exe"` (the image name is not translated; the "no tasks" message is). Silent runs exit with code 2.
+* An upgrade deletes the year's `RevitModelImporter` folder before copying, like `Install.ps1`. Uninstall removes the
+  add-in from all three years (also installs made by `Install.ps1`) and keeps settings.
+* Checked here under Wine 9 with a 64-bit build of the same script (`makensis "-XTarget amd64-unicode"`; this Wine has
+  no 32-bit support): silent install picks only the detected year and installs byte-identical files; the
+  Installed-apps entry is written; with a process named `Revit.exe` running, setup exits with 2, and succeeds once it
+  is closed; an upgrade removes a stale file; silent uninstall removes our files, folder and keys and leaves another
+  vendor's `.addin` alone; the welcome, components and finish pages render (screenshots under Xvfb). Not checked:
+  the 32-bit build on real Windows, SmartScreen, DPI scaling.
