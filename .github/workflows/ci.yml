@@ -51,6 +51,9 @@ jobs:
           if (-not (Get-Command makensis -ErrorAction SilentlyContinue) -and -not (Test-Path "${env:ProgramFiles(x86)}\NSIS\makensis.exe")) {
             choco install nsis --no-progress -y
           }
+          $makensis = (Get-Command makensis -ErrorAction SilentlyContinue).Source
+          if (-not $makensis) { $makensis = "${env:ProgramFiles(x86)}\NSIS\makensis.exe" }
+          & $makensis -VERSION
 
       - name: Package
         shell: pwsh

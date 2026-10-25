@@ -143,7 +143,9 @@ if ($Installer -ne 'Never') {
         $setup = Join-Path $OutputDirectory "RevitModelImporter-$version-Setup.exe"
         $nsisArgs = @('-V2', '-WX', "-DVERSION=$version", "-DSTAGE=$OutputDirectory", "-DROOT=$root", "-DOUTFILE=$setup")
         $nsisArgs += $RevitVersion | ForEach-Object { "-DREVIT$_" }
-        $nsisArgs += Join-Path $root 'packaging/installer/RevitModelImporter.nsi'
+        # GetFullPath turns forward slashes into backslashes on Windows; with a mixed path CI's makensis did not find
+        # files next to the script. (The script also locates its art from ${__FILEDIR__} now.)
+        $nsisArgs += [System.IO.Path]::GetFullPath((Join-Path $root 'packaging/installer/RevitModelImporter.nsi'))
         Write-Host "`n=== Installer ===" -ForegroundColor Cyan
         & $makensis @nsisArgs
         if ($LASTEXITCODE -ne 0) { throw "makensis failed with exit code $LASTEXITCODE" }

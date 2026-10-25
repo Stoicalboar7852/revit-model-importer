@@ -65,14 +65,16 @@ Var Found2027
 
 ; ----- Look and feel -------------------------------------------------------------------------------------------------
 
-!define MUI_ICON "art/installer.ico"
-!define MUI_UNICON "art/installer.ico"
-!define MUI_WELCOMEFINISHPAGE_BITMAP "art/wizard.bmp"
-!define MUI_UNWELCOMEFINISHPAGE_BITMAP "art/wizard.bmp"
+; Relative to this script, whatever the working directory makensis was started in.
+!define ART "${__FILEDIR__}\art"
+!define MUI_ICON "${ART}\installer.ico"
+!define MUI_UNICON "${ART}\installer.ico"
+!define MUI_WELCOMEFINISHPAGE_BITMAP "${ART}\wizard.bmp"
+!define MUI_UNWELCOMEFINISHPAGE_BITMAP "${ART}\wizard.bmp"
 !define MUI_HEADERIMAGE
 !define MUI_HEADERIMAGE_RIGHT
-!define MUI_HEADERIMAGE_BITMAP "art/header.bmp"
-!define MUI_HEADERIMAGE_UNBITMAP "art/header.bmp"
+!define MUI_HEADERIMAGE_BITMAP "${ART}\header.bmp"
+!define MUI_HEADERIMAGE_UNBITMAP "${ART}\header.bmp"
 !define MUI_ABORTWARNING
 !define MUI_COMPONENTSPAGE_SMALLDESC
 
