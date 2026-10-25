@@ -223,7 +223,7 @@
             </StackPanel>
             <StackPanel Orientation="Horizontal" Margin="0,2">
               <RadioButton GroupName="Target" IsChecked="{Binding IsCountTarget}" Content="Target" VerticalAlignment="Center" Width="90" />
-              <TextBox Width="120" Text="{Binding SimplifyTriangleCount, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding IsCountTarget}" />
+              <TextBox Width="120" Text="{Binding SimplifyTriangleCount, UpdateSourceTrigger=LostFocus}" IsEnabled="{Binding IsCountTarget}" />
               <TextBlock Margin="4,0,0,0" VerticalAlignment="Center" Text="faces in total" />
             </StackPanel>
             <TextBlock Style="{StaticResource Note}" Margin="0,4,0,0" Text="{Binding EstimateText}" />

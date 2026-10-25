@@ -43,6 +43,20 @@ public partial class XamlBindingTests
         Assert.Null(import.Attribute("IsEnabled"));
     }
 
+    [Fact]
+    public void ImportDialog_NumberBoxesApplyTheirMinimumOnlyWhenLeft()
+    {
+        // These setters clamp (face count ≥ 4, percent ≥ 0.1, palette 2–256). Updating on every keystroke would
+        // rewrite a number while it is typed ("2" of "2500" becomes 4), so they must update on LostFocus.
+        var doc = XDocument.Load(Path.Combine(RepoRoot(), "src", "RevitModelImporter.Revit", "UI", "ImportDialog.xaml"));
+        var boxes = doc.Descendants().Where(e => e.Name.LocalName == "TextBox").Select(e => (string?)e.Attribute("Text") ?? "").ToList();
+        foreach (var property in new[] { "SimplifyTriangleCount", "SimplifyPercent", "PaletteSize" })
+        {
+            var binding = Assert.Single(boxes, b => b.Contains("{Binding " + property + ",", StringComparison.Ordinal));
+            Assert.Contains("UpdateSourceTrigger=LostFocus", binding, StringComparison.Ordinal);
+        }
+    }
+
     private static IEnumerable<string> BindingPaths(string file)
     {
         var doc = XDocument.Load(file);

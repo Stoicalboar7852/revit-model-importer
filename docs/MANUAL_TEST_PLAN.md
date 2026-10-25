@@ -94,8 +94,10 @@ Using `cube.obj` unless noted:
       45000 faces" is selected, the estimate says about 45,000 faces. Uncheck Simplify again: the estimate returns to
       299,040. Nothing else changed.
 - [ ] A model between 50,000 and 250,000 faces shows the normal (yellow) notice with milder wording.
-- [ ] Simplify can be turned on for `cube.obj` too; the estimate updates live while typing a percentage or count
-      and while dragging the slider.
+- [ ] Simplify can be turned on for `cube.obj` too; the estimate updates live while dragging the slider, and when
+      you leave the percentage or face-count box (Tab or click elsewhere).
+- [ ] Face-count box: select all and type `2500` — it stays `2500` while typing (the leading `2` is not changed to 4).
+      Type `2` and press Tab → it becomes 4. Type `3000` and press **Enter** right away → the import uses 3,000.
 - [ ] Settings button: set **Recommend above** to 10 and **Strongly recommend above** to 20, Save. `cube.obj`
       (12 faces) now shows the normal notice. Set strong < normal → Save is disabled with a message.
 - [ ] Settings: uncheck **Show a recommendation …**, Save. The sphere shows no notice. Re-enable afterwards.
