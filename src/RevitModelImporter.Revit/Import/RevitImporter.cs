@@ -89,6 +89,7 @@ internal sealed class RevitImporter
 
             // Elements, in batches.
             var creator = new GeometryCreator(choices.GeometryMode, _settings.MaxTrianglesPerBuild);
+            var created = new List<ElementId>();
             var index = 0;
             while (index < model.Meshes.Count)
             {
@@ -96,6 +97,7 @@ internal sealed class RevitImporter
                 failures.Attach(t);
                 t.Start();
                 var inBatch = 0;
+                var batchIds = new List<ElementId>();
                 long batchTriangles = 0;
                 while (index < model.Meshes.Count && inBatch < ElementsPerTransaction && batchTriangles < TrianglesPerTransaction)
                 {
@@ -107,14 +109,22 @@ internal sealed class RevitImporter
 
                     var mesh = model.Meshes[index++];
                     progress.Report((double)done / totalTriangles, $"Creating {mesh.Object.Name} ({index} of {model.Meshes.Count})");
-                    CreateElement(mesh, materialIds, categoryId, placement, creator, header, summary, warnings);
+                    if (CreateElement(mesh, materialIds, categoryId, placement, creator, header, summary, warnings) is { } id)
+                    {
+                        batchIds.Add(id);
+                    }
+
                     done += mesh.Object.TriangleCount;
                     batchTriangles += mesh.Object.TriangleCount;
                     inBatch++;
                 }
 
                 progress.Report((double)done / totalTriangles, "Regenerating");
-                if (Commit(t) != TransactionStatus.Committed)
+                if (Commit(t) == TransactionStatus.Committed)
+                {
+                    created.AddRange(batchIds);
+                }
+                else
                 {
                     warnings.Add("Revit rolled back a batch of elements because of errors.");
                 }
@@ -123,6 +133,12 @@ internal sealed class RevitImporter
             if (progress.IsCancellationRequested)
             {
                 return Cancel(group, summary);
+            }
+
+            if (choices.CreateGroup)
+            {
+                progress.Report(1, "Grouping");
+                GroupElements(created, header.Source.Path, summary, warnings, failures);
             }
 
             group.Assimilate();
@@ -148,7 +164,55 @@ internal sealed class RevitImporter
         return summary;
     }
 
-    private void CreateElement(IntermediateMesh mesh, IReadOnlyList<ElementId> materialIds, ElementId categoryId, Transform placement, GeometryCreator creator, IntermediateHeader header, ImportSummary summary, List<string> warnings)
+    /// <summary>Puts the imported elements in one model group named after the file. DirectShapes are not listed in
+    /// the Project Browser; the group type is (Groups ▸ Model), and clicking any piece selects the whole import.</summary>
+    private void GroupElements(List<ElementId> ids, string sourcePath, ImportSummary summary, List<string> warnings, WarningCollector failures)
+    {
+        // Failure handling may have deleted an element after it was committed.
+        ids = ids.Where(id => _doc.GetElement(id) is not null).ToList();
+        if (ids.Count == 0)
+        {
+            return;
+        }
+
+        var taken = new FilteredElementCollector(_doc).OfClass(typeof(GroupType)).Select(e => e.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var name = RevitNaming.MakeUnique(RevitNaming.Sanitize(Path.GetFileNameWithoutExtension(sourcePath), "Imported model"), taken.Contains);
+        using var t = new Transaction(_doc, "Group imported elements");
+        failures.Attach(t);
+        t.Start();
+        Group modelGroup;
+        try
+        {
+            modelGroup = _doc.Create.NewGroup(ids);
+        }
+        catch (RevitException e)
+        {
+            t.RollBack();
+            warnings.Add($"The elements could not be put in a group ({e.Message}). They are in the project, ungrouped.");
+            return;
+        }
+
+        try
+        {
+            modelGroup.GroupType.Name = name;
+        }
+        catch (RevitException)
+        {
+            // Keep Revit's generic name ("Group 1") rather than lose the group.
+            name = modelGroup.GroupType.Name;
+        }
+
+        if (Commit(t) == TransactionStatus.Committed)
+        {
+            summary.GroupName = name;
+        }
+        else
+        {
+            warnings.Add("Revit refused to group the elements. They are in the project, ungrouped.");
+        }
+    }
+
+    private ElementId? CreateElement(IntermediateMesh mesh, IReadOnlyList<ElementId> materialIds, ElementId categoryId, Transform placement, GeometryCreator creator, IntermediateHeader header, ImportSummary summary, List<string> warnings)
     {
         summary.TrianglesSentToRevit += mesh.Object.TriangleCount;
         GeometryResult geometry;
@@ -160,7 +224,7 @@ internal sealed class RevitImporter
         {
             warnings.Add($"'{mesh.Object.Name}' could not be built: {e.Message}");
             summary.TrianglesRejectedByRevit += mesh.Object.TriangleCount;
-            return;
+            return null;
         }
 
         summary.TrianglesRejectedByRevit += geometry.RejectedTriangles;
@@ -169,7 +233,7 @@ internal sealed class RevitImporter
         if (geometry.Objects.Count == 0)
         {
             warnings.Add($"Revit could not use any of the faces of '{mesh.Object.Name}'.");
-            return;
+            return null;
         }
 
         var ds = DirectShape.CreateElement(_doc, categoryId);
@@ -186,7 +250,7 @@ internal sealed class RevitImporter
                 warnings.Add($"Revit rejected the geometry of '{mesh.Object.Name}'.");
                 summary.TrianglesRejectedByRevit += mesh.Object.TriangleCount - geometry.RejectedTriangles;
                 _doc.Delete(ds.Id);
-                return;
+                return null;
             }
 
             ds.ApplicationId = AddinInfo.ApplicationId;
@@ -194,11 +258,13 @@ internal sealed class RevitImporter
             ds.SetShape(shape);
             ds.SetName(RevitNaming.Sanitize(mesh.Object.Name, "Imported object"));
             summary.ElementsCreated++;
+            return ds.Id;
         }
         catch (RevitException e)
         {
             warnings.Add($"'{mesh.Object.Name}' could not be created: {e.Message}");
             _doc.Delete(ds.Id);
+            return null;
         }
     }
 
@@ -231,6 +297,7 @@ internal sealed class RevitImporter
         summary.ElementsCreated = 0;
         summary.MaterialsCreated = 0;
         summary.MaterialsReused = 0;
+        summary.GroupName = null;
         return summary;
     }
 }

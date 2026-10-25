@@ -180,8 +180,12 @@
               <ComboBox Grid.Row="3" Grid.Column="1" ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}" DisplayMemberPath="Name"
                         ToolTip="Only categories that Revit accepts for DirectShape elements are listed." />
 
-              <TextBlock Grid.Row="4" Style="{StaticResource Label}" Text="Grouping" />
-              <ComboBox Grid.Row="4" Grid.Column="1" ItemsSource="{Binding Groupings}" SelectedItem="{Binding SelectedGrouping}" DisplayMemberPath="Label" />
+              <TextBlock Grid.Row="4" Style="{StaticResource Label}" Text="Elements" VerticalAlignment="Top" Margin="0,6,12,0" />
+              <StackPanel Grid.Row="4" Grid.Column="1">
+                <ComboBox ItemsSource="{Binding Groupings}" SelectedItem="{Binding SelectedGrouping}" DisplayMemberPath="Label" />
+                <CheckBox Margin="0,6,0,0" IsChecked="{Binding CreateGroup}" Content="Put them in a Revit group named after the file"
+                          ToolTip="The group is listed in the Project Browser under Groups ▸ Model. Click any piece to select the whole import; press Tab or use Ungroup to work with single pieces." />
+              </StackPanel>
 
               <TextBlock Grid.Row="5" Style="{StaticResource Label}" Text="Geometry" />
               <ComboBox Grid.Row="5" Grid.Column="1" ItemsSource="{Binding GeometryModes}" SelectedItem="{Binding SelectedGeometryMode}" DisplayMemberPath="Label"

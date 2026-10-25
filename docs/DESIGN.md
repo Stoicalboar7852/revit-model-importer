@@ -244,7 +244,11 @@ rejects other magic values and newer major versions with a clear message.
   progress dialog (owned by Revit's main window via `WindowInteropHelper.Owner = UIApplication.MainWindowHandle`)
   pumps messages; Cancel kills the worker.
 * Element creation happens back in `IExternalCommand.Execute` (valid API context) inside one `TransactionGroup`,
-  with one `Transaction` for materials and one per batch of elements, then `Assimilate()` → one undo step.
+  with one `Transaction` for materials and one per batch of elements, then (by default) one that puts every element
+  that survived its batch in a model group (`Document.Create.NewGroup`, group type named after the file and made
+  unique), then `Assimilate()` → one undo step. The group exists because DirectShapes — with or without a
+  `DirectShapeType` — are not listed in the Project Browser; a model group type is (Groups ▸ Model), selects as one
+  and supports Select All Instances. If Revit refuses the group the elements stay, ungrouped, with a warning.
 * While elements are created, a progress window runs on its own STA thread (its own dispatcher), because the Revit
   thread is busy. Its Cancel button sets a flag that is checked between elements; on cancel the group is
   `RollBack()`-ed so nothing is left behind.

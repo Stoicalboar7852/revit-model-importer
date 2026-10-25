@@ -71,7 +71,9 @@ Using `cube.obj` unless noted:
 - [ ] Placement offers Internal origin / Project base point / Centered on the origin.
 - [ ] Category list contains only model categories (Generic Models selected by default; e.g. Furniture, Planting,
       Site, Mass … present; no annotation categories).
-- [ ] Grouping: One element per object / Single merged element. Geometry: Solids where possible / Mesh only.
+- [ ] Elements: One element per object / Single merged element, and **Put them in a Revit group named after the
+      file** ticked by default (also for a settings file from an earlier version). Geometry: Solids where possible /
+      Mesh only.
 - [ ] Material mode defaults: `cube.obj` (UVs inside 0–1) → **Baked colors** with a one-line explanation and a
       "Default for this model" reason; `multimaterial.glb` (no textures) → **Flat colors**. Palette size field appears
       only for Baked colors.
@@ -182,6 +184,10 @@ element appears, has the right size (Measure tool), the right orientation (up is
 - [ ] **Project base point**: move the project base point, import → the model origin sits at the base point.
 - [ ] **Centered on the origin**: the model's plan centre is at the internal origin and its base at elevation 0.
 - [ ] **Single merged element**: `nested.gltf` gives one element containing both cubes.
+- [ ] **Group** (default): after importing `nested.gltf` the Project Browser shows **Groups ▸ Model ▸ nested**; clicking
+      either cube selects both; the summary has a "Group" line. Import it again → **nested (2)**. Ctrl+Z removes the
+      elements and the group in one step. Tab picks a single cube; Ungroup leaves both cubes in the project.
+- [ ] Untick the group option: no new group, the elements are still created, and the option stays unticked next time.
 - [ ] Choose **Furniture** as category: elements are Furniture, scheduled as such.
 
 ## 11. Corrupted and odd files

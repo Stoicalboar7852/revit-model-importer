@@ -333,6 +333,9 @@ public class ImportDialogViewModelTests
         vm.SelectedPlacement = vm.Placements.First(p => p.Value == PlacementMode.CenterOnOrigin);
         vm.SelectedCategory = Furniture;
         vm.SelectedGrouping = vm.Groupings.First(g => g.Value == GroupingMode.SingleElement);
+        Assert.True(vm.CreateGroup);
+        vm.CreateGroup = false;
+        Assert.False(vm.GetChoices().CreateGroup);
         vm.SelectedGeometryMode = vm.GeometryModes.First(g => g.Value == GeometryMode.MeshOnly);
         vm.IsSimplifyEnabled = true;
         vm.SimplifyPercent = 33;
@@ -345,6 +348,8 @@ public class ImportDialogViewModelTests
         Assert.Equal(PlacementMode.CenterOnOrigin, last.Placement);
         Assert.Equal("OST_Furniture", last.Category);
         Assert.Equal(GroupingMode.SingleElement, last.Grouping);
+        Assert.False(last.CreateGroup);
+        Assert.False(Create(Analysis(10, "stl"), settings).CreateGroup);
         Assert.Equal(GeometryMode.MeshOnly, last.GeometryMode);
         Assert.True(last.SimplifyEnabled);
         Assert.Equal(33, last.SimplifyPercent);

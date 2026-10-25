@@ -56,6 +56,10 @@ QUICK TEST
 3. Click Import. A summary appears when it is done.
 4. Ctrl+Z removes the whole import in one step.
 
+The import is put in a Revit group named after the file. Find it in the Project Browser under
+Groups > Model (imported pieces are not families, so they are not listed under Families). Clicking any
+piece selects the whole import; press Tab to pick a single piece, or use Ungroup to break it apart.
+
 Textures are copied to a folder next to your project (<project name>_textures). Keep that folder
 with the project: Revit only stores the path to each image.
 

@@ -103,6 +103,10 @@ public sealed class LastUsedOptions
 
     public GroupingMode Grouping { get; set; } = GroupingMode.PerObject;
 
+    /// <summary>Put the imported elements in one Revit model group named after the file, so the import is listed in
+    /// the Project Browser (Groups ▸ Model) and selects and moves as one. DirectShapes alone are not listed there.</summary>
+    public bool CreateGroup { get; set; } = true;
+
     public GeometryMode GeometryMode { get; set; } = GeometryMode.SolidsWithMeshFallback;
 
     /// <summary>Simplify is never switched on by the importer; this is only the user's own last choice.</summary>

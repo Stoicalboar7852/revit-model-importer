@@ -20,8 +20,8 @@ file that crashes a parser cannot take Revit (and your unsaved work) down with i
     and missing, and the real-world size in the chosen units (metric and imperial);
   - options: source units (auto-detected when the file says), up axis (Y-up / Z-up, defaulted per format),
     placement (internal origin, project base point, centred on the origin), Revit category (only categories
-    `DirectShape.IsValidCategoryId` accepts; Generic Models by default), grouping (one element per object or one
-    merged element), geometry (solids with mesh fallback, or mesh only), material mode, and **Simplify** with a
+    `DirectShape.IsValidCategoryId` accepts; Generic Models by default), elements (one per object or one
+    merged element, optionally in a Revit model group named after the file — on by default), geometry (solids with mesh fallback, or mesh only), material mode, and **Simplify** with a
     target as a percentage or a face count and a live estimate;
   - an inline **simplification recommendation** (see below);
   - a **Locate textures folder…** button when textures are missing;
@@ -126,6 +126,20 @@ settings and the unsaved-project texture folder). Texture folders next to projec
    progress window (Cancel rolls everything back).
 5. Read the summary. One **Undo** removes the whole import.
 
+### Finding and selecting an import
+
+Imported pieces are DirectShape elements, not families, so Revit does not list them under **Families** in the
+Project Browser (not even under Generic Models). With **Put them in a Revit group named after the file** ticked
+(the default), the import is one model group:
+
+- it is listed in the Project Browser under **Groups ▸ Model ▸ <file name>**;
+- clicking any piece selects the whole import, so it moves, copies and deletes as one;
+- right-click the group in the Project Browser ▸ **Select All Instances** finds it in a view or the whole project;
+- press **Tab** while hovering to pick a single piece, or **Ungroup** to break it apart.
+
+Without the group, drag a selection box around the model and use **Filter** (Modify tab) to keep only its
+category.
+
 Each element's `ApplicationId` is `RevitModelImporter/<AddInId>` and its `ApplicationDataId` is
 `<source file>#<node path>`, so imported elements can be traced back to their source.
 
@@ -226,9 +240,12 @@ Design decisions, research findings (with what was checked and how) and deviatio
 - `Install.ps1` / `Uninstall.ps1` were run with PowerShell 7 against a temporary folder (install, reinstall,
   wrong-year refusal, uninstall).
 
+**Reported from Revit 2025.5 by a tester:** the add-in loads, the ribbon tab appears, and a model imports as
+DirectShape elements (one per object).
+
 **Needs verification in Revit** (not run — there is no Revit here): the ribbon and icons; dialogs on screen and their
 parenting; the add-in actually loading in Revit 2025/2026/2027; DirectShape creation, categories, solids vs. mesh
-fallback and rejected-face counts; appearance assets, texture attachment and real-world texture size; material
+fallback and rejected-face counts; putting the elements in a model group; appearance assets, texture attachment and real-world texture size; material
 reuse via Extensible Storage; one-step undo and cancel rollback; the warning suppression; the background progress
 window; timings of element creation and the best `maxTrianglesPerBuild`; running the packaged worker on a machine
 with only Revit's .NET runtime. The checklist is [docs/MANUAL_TEST_PLAN.md](docs/MANUAL_TEST_PLAN.md).

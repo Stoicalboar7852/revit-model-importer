@@ -21,6 +21,17 @@ public sealed class SettingsStoreTests : IDisposable
         Assert.Equal(250_000, s.StrongRecommendThreshold);
         Assert.False(s.LastUsed.SimplifyEnabled);
         Assert.Equal("OST_GenericModel", s.LastUsed.Category);
+        Assert.True(s.LastUsed.CreateGroup);
+    }
+
+    [Fact]
+    public void SettingsFromBeforeGrouping_StillGroup()
+    {
+        var path = Path.Combine(_dir, "settings.json");
+        File.WriteAllText(path, """{ "lastUsed": { "grouping": "PerObject", "paletteSize": 32 } }""");
+        var s = new SettingsStore(path).Load();
+        Assert.Equal(GroupingMode.PerObject, s.LastUsed.Grouping);
+        Assert.True(s.LastUsed.CreateGroup);
     }
 
     [Fact]
@@ -176,7 +187,10 @@ public class PresentationHelpersTests
         };
 
         var text = s.ToText();
-        foreach (var expected in new[] { "Elements created: 3", "2 created, 1 reused", "100,000", "40,000", "Faces Revit rejected (estimate): 12", "wood.jpg", "6.0 s", "careful", "keep this folder with the project" })
+        Assert.DoesNotContain("Group:", text, StringComparison.Ordinal);
+        s.GroupName = "chair";
+        text = s.ToText();
+        foreach (var expected in new[] { "Group: chair", "Project Browser", "Elements created: 3", "2 created, 1 reused", "100,000", "40,000", "Faces Revit rejected (estimate): 12", "wood.jpg", "6.0 s", "careful", "keep this folder with the project" })
         {
             Assert.Contains(expected, text, StringComparison.Ordinal);
         }

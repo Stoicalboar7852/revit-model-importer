@@ -12,6 +12,9 @@ public sealed class ImportSummary
 
     public int ElementsCreated { get; set; }
 
+    /// <summary>Name of the model group holding the imported elements, or null when they were not grouped.</summary>
+    public string? GroupName { get; set; }
+
     public int MaterialsCreated { get; set; }
 
     public int MaterialsReused { get; set; }
@@ -64,6 +67,11 @@ public sealed class ImportSummary
             ("Missing textures", MissingTextures.Count == 0 ? "none" : string.Join(", ", MissingTextures)),
             ("Elapsed", $"{Seconds(TotalTime)}  (analysis {Seconds(AnalysisTime)}, conversion {Seconds(ConversionTime)}, creating elements {Seconds(CreationTime)})"),
         };
+        if (GroupName is not null)
+        {
+            lines.Insert(1, ("Group", $"{GroupName}  (Project Browser ▸ Groups ▸ Model; click any piece to select the whole import)"));
+        }
+
         if (TextureFolder is not null)
         {
             lines.Add(("Texture folder", TextureFolder));

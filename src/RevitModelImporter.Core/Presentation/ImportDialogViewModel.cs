@@ -38,6 +38,7 @@ public sealed record ImportChoices(
     PlacementMode Placement,
     CategoryOption? Category,
     GroupingMode Grouping,
+    bool CreateGroup,
     GeometryMode GeometryMode,
     MaterialMode MaterialMode,
     int PaletteSize,
@@ -66,6 +67,7 @@ public sealed class ImportDialogViewModel : ObservableObject
     private Option<PlacementMode> _selectedPlacement;
     private CategoryOption? _selectedCategory;
     private Option<GroupingMode> _selectedGrouping;
+    private bool _createGroup;
     private Option<GeometryMode> _selectedGeometryMode;
     private Option<MaterialMode> _selectedMaterialMode;
     private int _paletteSize;
@@ -118,6 +120,7 @@ public sealed class ImportDialogViewModel : ObservableObject
             ?? Categories.FirstOrDefault(c => c.BuiltInName == "OST_GenericModel")
             ?? (Categories.Count > 0 ? Categories[0] : null);
         _selectedGrouping = Groupings.First(g => g.Value == last.Grouping);
+        _createGroup = last.CreateGroup;
         _selectedGeometryMode = GeometryModes.First(g => g.Value == last.GeometryMode);
         _selectedMaterialMode = MaterialModeOptions.First(m => m.Value == analysis.RecommendedMaterialMode);
         _paletteSize = last.PaletteSize;
@@ -281,6 +284,12 @@ public sealed class ImportDialogViewModel : ObservableObject
     {
         get => _selectedGrouping;
         set => Set(ref _selectedGrouping, value);
+    }
+
+    public bool CreateGroup
+    {
+        get => _createGroup;
+        set => Set(ref _createGroup, value);
     }
 
     public IReadOnlyList<Option<GeometryMode>> GeometryModes { get; }
@@ -507,6 +516,7 @@ public sealed class ImportDialogViewModel : ObservableObject
         SelectedPlacement.Value,
         SelectedCategory,
         SelectedGrouping.Value,
+        CreateGroup,
         SelectedGeometryMode.Value,
         SelectedMaterialMode.Value,
         PaletteSize,
@@ -530,6 +540,7 @@ public sealed class ImportDialogViewModel : ObservableObject
         }
 
         last.Grouping = SelectedGrouping.Value;
+        last.CreateGroup = CreateGroup;
         last.GeometryMode = SelectedGeometryMode.Value;
         last.PaletteSize = PaletteSize;
         last.SimplifyEnabled = IsSimplifyEnabled;
